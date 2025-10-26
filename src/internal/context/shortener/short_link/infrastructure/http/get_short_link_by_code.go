@@ -68,7 +68,7 @@ func (h *GetShortLinkByCodeHTTPHandler) Handler(w http.ResponseWriter, req *http
 }
 
 func (h *GetShortLinkByCodeHTTPHandler) Route() string {
-	return "/short-links/{code}"
+	return "/{code}"
 }
 
 func (h *GetShortLinkByCodeHTTPHandler) Method() string {
