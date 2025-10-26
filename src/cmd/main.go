@@ -52,6 +52,7 @@ func main() {
 		short_link_infrastructure.NewSqlcShortLinkRepository(logger, queries),
 		cache,
 		5*time.Minute, // TTL de ejemplo, puedes parametrizarlo
+		logger,
 	)
 	linkVisitRepository := link_visit_infrastructure.NewSqlcLinkVisitRepository(logger, queries)
 
