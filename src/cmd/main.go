@@ -3,18 +3,22 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/aperezgdev/api-snipme/db/generated"
 	link_visit_creator "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/application"
 	link_visit_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/infrastructure"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	shared_infrastructure_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure"
+	shared_cache "github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/cache"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http/middleware"
 	short_link_application "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/application"
 	short_link_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure"
+	short_link_cache "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure/cache"
 	short_link_http "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure/http"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -36,8 +40,20 @@ func main() {
 
 	queries := generated.New(pool)
 
-	shortLinkRepository := short_link_infrastructure.NewSqlcShortLinkRepository(queries)
-	linkVisitRepository := link_visit_infrastructure.NewSqlcLinkVisitRepository(queries)
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     conf.Redis.Url,
+		Password: conf.Redis.Password,
+		DB:       0,
+	})
+	defer redisClient.Close()
+
+	cache := shared_cache.NewRedisCache(redisClient)
+	shortLinkRepository := short_link_cache.NewRedisShortLinkRepository(
+		short_link_infrastructure.NewSqlcShortLinkRepository(logger, queries),
+		cache,
+		5*time.Minute, // TTL de ejemplo, puedes parametrizarlo
+	)
+	linkVisitRepository := link_visit_infrastructure.NewSqlcLinkVisitRepository(logger, queries)
 
 	shortLinkFinderByCode := short_link_application.NewShortLinkFinderByCode(logger, shortLinkRepository)
 	shortLinkCreator := short_link_application.NewShortLinkCreator(logger, shortLinkRepository, &eventBus)

@@ -31,7 +31,8 @@ type DatabaseConfig struct {
 }
 
 type RedisConfig struct {
-	Url string
+	Url      string
+	Password string
 }
 
 func Load() *Config {
@@ -57,6 +58,10 @@ func Load() *Config {
 		},
 		Database: DatabaseConfig{
 			Url: getEnv("DATABASE_URL", "postgres://user:password@localhost:5432/mydb"),
+		},
+		Redis: RedisConfig{
+			Url:      getEnv("REDIS_URL", "localhost:6379"),
+			Password: getEnv("REDIS_PASSWORD", ""),
 		},
 	}
 

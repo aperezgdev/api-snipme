@@ -12,14 +12,16 @@ import (
 )
 
 type SqlcShortLinkRepository struct {
+	logger  shared_domain_context.Logger
 	queries *generated.Queries
 }
 
-func NewSqlcShortLinkRepository(q *generated.Queries) *SqlcShortLinkRepository {
-	return &SqlcShortLinkRepository{queries: q}
+func NewSqlcShortLinkRepository(logger shared_domain_context.Logger, q *generated.Queries) *SqlcShortLinkRepository {
+	return &SqlcShortLinkRepository{queries: q, logger: logger}
 }
 
 func (r *SqlcShortLinkRepository) Save(ctx context.Context, shortLink *domain.ShortLink) error {
+	r.logger.Info(ctx, "SqlcShortLinkRepository - Save - Params into", shared_domain_context.NewField("id", shortLink.Id.String()), shared_domain_context.NewField("code", string(shortLink.Code)))
 	id := pgtype.UUID{}
 	_ = id.Scan(shortLink.Id.String())
 
@@ -43,18 +45,32 @@ func (r *SqlcShortLinkRepository) Save(ctx context.Context, shortLink *domain.Sh
 		CreatedOn:     createdOn,
 	})
 
-	return err
+	if err != nil {
+		r.logger.Error(ctx, "SqlcShortLinkRepository - Save - Error saving short link", shared_domain_context.NewField("error", err.Error()))
+		return err
+	}
+	r.logger.Info(ctx, "SqlcShortLinkRepository - Save - Short link saved successfully", shared_domain_context.NewField("id", shortLink.Id.String()))
+	return nil
 }
 
 func (r *SqlcShortLinkRepository) Remove(ctx context.Context, id shared_domain_context.Id) error {
+	r.logger.Info(ctx, "SqlcShortLinkRepository - Remove - Params into", shared_domain_context.NewField("id", id.String()))
 	uuid := pgtype.UUID{}
 	_ = uuid.Scan(id.String())
-	return r.queries.RemoveShortLink(ctx, uuid)
+	err := r.queries.RemoveShortLink(ctx, uuid)
+	if err != nil {
+		r.logger.Error(ctx, "SqlcShortLinkRepository - Remove - Error removing short link", shared_domain_context.NewField("error", err.Error()))
+		return err
+	}
+	r.logger.Info(ctx, "SqlcShortLinkRepository - Remove - Short link removed successfully", shared_domain_context.NewField("id", id.String()))
+	return nil
 }
 
 func (r *SqlcShortLinkRepository) FindByCode(ctx context.Context, code domain.ShortLinkCode) (pkg.Optional[*domain.ShortLink], error) {
+	r.logger.Info(ctx, "SqlcShortLinkRepository - FindByCode - Params into", shared_domain_context.NewField("code", string(code)))
 	shortLink, err := r.queries.FindShortLinkByCode(ctx, string(code))
 	if err != nil {
+		r.logger.Error(ctx, "SqlcShortLinkRepository - FindByCode - Error finding short link", shared_domain_context.NewField("error", err.Error()))
 		return pkg.Optional[*domain.ShortLink]{}, err
 	}
 
@@ -67,5 +83,6 @@ func (r *SqlcShortLinkRepository) FindByCode(ctx context.Context, code domain.Sh
 		Client:        clientID,
 		CreatedOn:     shared_domain_context.CreatedOn(shortLink.CreatedOn.Time),
 	}
+	r.logger.Info(ctx, "SqlcShortLinkRepository - FindByCode - Short link found successfully", shared_domain_context.NewField("id", id.String()))
 	return pkg.Some(result), nil
 }

@@ -8,18 +8,26 @@ import (
 
 	"github.com/aperezgdev/api-snipme/db/generated"
 	"github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/domain"
+	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SqlcLinkVisitRepository struct {
+	logger  shared_domain_context.Logger
 	queries *generated.Queries
 }
 
-func NewSqlcLinkVisitRepository(q *generated.Queries) *SqlcLinkVisitRepository {
-	return &SqlcLinkVisitRepository{queries: q}
+func NewSqlcLinkVisitRepository(logger shared_domain_context.Logger, q *generated.Queries) *SqlcLinkVisitRepository {
+	return &SqlcLinkVisitRepository{queries: q, logger: logger}
 }
 
 func (r *SqlcLinkVisitRepository) Save(ctx context.Context, linkVisit domain.LinkVisit) error {
+	r.logger.Info(ctx, "SqlcLinkVisitRepository - Save - Params into",
+		shared_domain_context.NewField("linkVisitId", linkVisit.Id.String()),
+		shared_domain_context.NewField("linkId", linkVisit.LinkId.String()),
+		shared_domain_context.NewField("ip", linkVisit.Ip),
+	)
+
 	id := pgtype.UUID{}
 	_ = id.Scan(linkVisit.Id.String())
 
@@ -39,5 +47,11 @@ func (r *SqlcLinkVisitRepository) Save(ctx context.Context, linkVisit domain.Lin
 		UserAgent: pgtype.Text{String: string(linkVisit.UserAgent), Valid: true},
 		CreatedOn: createdOn,
 	}
-	return r.queries.SaveLinkVisit(ctx, params)
+	err := r.queries.SaveLinkVisit(ctx, params)
+	if err != nil {
+		r.logger.Error(ctx, "SqlcLinkVisitRepository - Save - Error saving link visit", shared_domain_context.NewField("error", err.Error()))
+		return err
+	}
+	r.logger.Info(ctx, "SqlcLinkVisitRepository - Save - Link visit saved successfully", shared_domain_context.NewField("linkVisitId", linkVisit.Id.String()))
+	return nil
 }
