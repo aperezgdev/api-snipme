@@ -23,8 +23,16 @@ import (
 
 func main() {
 	conf := shared_infrastructure_context.Load()
-	logger := shared_domain_context.NewConsoleLogger()
+	var logger shared_domain_context.Logger
 	eventBus := shared_domain_context.NewEventBusInMemory()
+
+	if conf.Loki.Url != "" {
+		lokiLogger := shared_infrastructure_context.NewLokiLogger(conf.Loki.Url)
+		consoleLogger := shared_domain_context.NewConsoleLogger()
+		logger = shared_domain_context.NewCompositeLogger(consoleLogger, lokiLogger)
+	} else {
+		logger = shared_domain_context.NewConsoleLogger()
+	}
 
 	ctx := context.Background()
 	config, err := pgxpool.ParseConfig(conf.Database.Url)
@@ -64,7 +72,7 @@ func main() {
 	getShortLink := short_link_http.NewGetShortLinkByCodeHTTPHandler(logger, *shortLinkFinderByCode, *linkVisitCreator)
 	postShortLink := short_link_http.NewPostShortLinkHTTPHandler(logger, *shortLinkCreator)
 
-	router := http.NewRouter([]http.Middleware{middleware.NewRecoveryMiddleware(logger), middleware.NewRequestIDMiddleware(logger), middleware.NewLoggerMiddleware(logger), middleware.NewPrometheusMiddleware()}, getShortLink, postShortLink)
+	router := http.NewRouter([]http.Middleware{middleware.NewRecoveryMiddleware(logger), middleware.NewLoggerMiddleware(logger), middleware.NewPrometheusMiddleware(), middleware.NewRequestIDMiddleware(logger)}, getShortLink, postShortLink)
 
 	server := http.NewServer(logger, router, conf)
 

@@ -13,6 +13,7 @@ services:
       APP_VERSION: ${APP_VERSION}
       REDIS_URL: ${REDIS_URL}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      LOKI_URL: http://loki:3100
     depends_on:
       db:
         condition: service_healthy

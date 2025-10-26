@@ -12,11 +12,16 @@ type Config struct {
 	Database DatabaseConfig
 	Server   ServerConfig
 	Redis    RedisConfig
+	Loki     LokiConfig
 }
 type AppConfig struct {
 	Name    string
 	Version string
 	Env     string
+}
+
+type LokiConfig struct {
+	Url string
 }
 
 type ServerConfig struct {
@@ -62,6 +67,9 @@ func Load() *Config {
 		Redis: RedisConfig{
 			Url:      getEnv("REDIS_URL", "localhost:6379"),
 			Password: getEnv("REDIS_PASSWORD", ""),
+		},
+		Loki: LokiConfig{
+			Url: getEnv("LOKI_URL", ""),
 		},
 	}
 
