@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/aperezgdev/api-snipme/db/generated"
 	link_visit_creator "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/application"
@@ -28,10 +27,6 @@ func main() {
 	if err != nil {
 		logger.Error(ctx, "Error parsing database URL", shared_domain_context.NewField("error", err))
 	}
-
-	config.MaxConns = 50                     // máximo de conexiones abiertas
-	config.MinConns = 5                      // mínimo de conexiones mantenidas
-	config.MaxConnIdleTime = 5 * time.Minute // tiempo máximo que una conexión puede estar idle
 
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
