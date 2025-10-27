@@ -19,6 +19,7 @@ import (
 	short_link_http "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure/http"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/time/rate"
 )
 
 func main() {
@@ -59,9 +60,10 @@ func main() {
 	shortLinkRepository := short_link_cache.NewRedisShortLinkRepository(
 		short_link_infrastructure.NewSqlcShortLinkRepository(logger, queries),
 		cache,
-		5*time.Minute, // TTL de ejemplo, puedes parametrizarlo
+		5*time.Minute,
 		logger,
 	)
+
 	linkVisitRepository := link_visit_infrastructure.NewSqlcLinkVisitRepository(logger, queries)
 
 	shortLinkFinderByCode := short_link_application.NewShortLinkFinderByCode(logger, shortLinkRepository)
@@ -72,7 +74,13 @@ func main() {
 	getShortLink := short_link_http.NewGetShortLinkByCodeHTTPHandler(logger, *shortLinkFinderByCode, *linkVisitCreator)
 	postShortLink := short_link_http.NewPostShortLinkHTTPHandler(logger, *shortLinkCreator)
 
-	router := http.NewRouter([]http.Middleware{middleware.NewRecoveryMiddleware(logger), middleware.NewLoggerMiddleware(logger), middleware.NewPrometheusMiddleware(), middleware.NewRequestIDMiddleware(logger)}, getShortLink, postShortLink)
+	router := http.NewRouter([]http.Middleware{
+		middleware.NewRecoveryMiddleware(logger),
+		middleware.NewLoggerMiddleware(logger),
+		middleware.NewPrometheusMiddleware(),
+		middleware.NewRequestIDMiddleware(logger),
+		middleware.NewRateLimitMiddleware(logger, rate.Every(100*time.Millisecond), 5),
+	}, getShortLink, postShortLink)
 
 	server := http.NewServer(logger, router, conf)
 
