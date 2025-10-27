@@ -3,6 +3,8 @@ package domain
 import (
 	"context"
 	"time"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type DomainEventBase struct {
@@ -72,4 +74,16 @@ func (eb *EventBusInMemory) Publish(ctx context.Context, events ...DomainEvent) 
 
 func (eb *EventBusInMemory) AddSubscribers(eventName string, subscribers ...DomainEventSubscriber) {
 	eb.subscribers[eventName] = append(eb.subscribers[eventName], subscribers...)
+}
+
+type EventBusMock struct {
+	mock.Mock
+}
+
+func (eb *EventBusMock) Publish(ctx context.Context, events ...DomainEvent) {
+	eb.Called(ctx, events)
+}
+
+func (eb *EventBusMock) AddSubscribers(eventName string, subscribers ...DomainEventSubscriber) {
+	eb.Called(eventName, subscribers)
 }

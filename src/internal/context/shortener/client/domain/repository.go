@@ -12,16 +12,16 @@ type ClientRepository interface {
 	Remove(ctx context.Context, id shared_domain.Id) error
 }
 
-type ShortLinkRepository struct {
+type ClientRepositoryMock struct {
 	mock.Mock
 }
 
-func (m *ShortLinkRepository) Save(ctx context.Context, client Client) error {
+func (m *ClientRepositoryMock) Save(ctx context.Context, client Client) error {
 	args := m.Called(ctx, client)
 	return args.Error(0)
 }
 
-func (m *ShortLinkRepository) Remove(ctx context.Context, id shared_domain.Id) error {
+func (m *ClientRepositoryMock) Remove(ctx context.Context, id shared_domain.Id) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }

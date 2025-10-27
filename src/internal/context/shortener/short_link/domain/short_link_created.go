@@ -11,8 +11,8 @@ type ShortLinkCreated struct {
 func NewShortLinkCreated(shortLinkID string) ShortLinkCreated {
 	return ShortLinkCreated{
 		DomainEventBase: shared_domain_context.NewDomainEvent(
-			ShortLinkCreatedEventName,
 			shortLinkID,
+			ShortLinkCreatedEventName,
 		),
 	}
 }

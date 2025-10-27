@@ -16,8 +16,8 @@ func NewShortLinkOriginalRoute(link string) (ShortLinkOriginalRoute, error) {
 }
 
 func validate(link string) error {
-	_, err := url.ParseRequestURI(link)
-	if err != nil {
+	url, err := url.ParseRequestURI(link)
+	if err != nil || url.Scheme == "" || url.Host == "" {
 		return shared_domain.NewValidationError("original_link", "must be a valid URL")
 	}
 	return err

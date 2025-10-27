@@ -39,7 +39,7 @@ func NewLinkCountryViewCounter(linkId, countryCode string) (*LinkCountryViewCoun
 
 	return linkCountryViewCounter, nil
 }
-func (lcs LinkCountryViewCounter) Increment(totalViews, uniqueViews uint) LinkCountryViewCounter {
+func (lcs *LinkCountryViewCounter) Increment(totalViews, uniqueViews uint) *LinkCountryViewCounter {
 	lcs.TotalViews += shared_domain.LinkViewsCounter(totalViews)
 	lcs.UniqueViews += shared_domain.LinkViewsCounter(uniqueViews)
 	lcs.Record(NewLinkViewCounterIncrementedDomainEvent(

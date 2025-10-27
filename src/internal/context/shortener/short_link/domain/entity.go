@@ -13,8 +13,17 @@ type ShortLink struct {
 
 func NewShortLink(originalLink, client string) (*ShortLink, error) {
 	idVO, err := shared_domain.NewID()
+	if err != nil {
+		return nil, err
+	}
 	originalPathVO, err := NewShortLinkOriginalRoute(originalLink)
+	if err != nil {
+		return nil, err
+	}
 	codeVO, err := NewCode()
+	if err != nil {
+		return nil, err
+	}
 	var clientVO shared_domain.Id
 	if client != "" {
 		clientVO, err = shared_domain.ParseID(client)
