@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"errors"
 
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/domain"
@@ -34,7 +33,7 @@ func (sf ShortLinkFinderByCode) Run(ctx context.Context, code string) (*domain.S
 
 	if !shortLinkOpt.IsPresent() {
 		sf.logger.Info(ctx, "ShortLinkFinderByCode - Run: No short link found for the given code", shared_domain_context.NewField("code", code))
-		return nil, errors.New("Short link not found")
+		return nil, shared_domain_context.NewNotFoundError("Short link not found")
 	}
 
 	shortLink := shortLinkOpt.Get()

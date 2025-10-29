@@ -21,16 +21,24 @@ type postShortLinkHttpRequest struct {
 
 func NewPostShortLinkHTTPHandler(logger shared_domain_context.Logger, creator application.ShortLinkCreator) *PostShortLinkHTTPHanlder {
 	return &PostShortLinkHTTPHanlder{
+		logger:  logger,
 		creator: creator,
 	}
 }
 
 func (h *PostShortLinkHTTPHanlder) Handler(w http.ResponseWriter, req *http.Request) {
 	request := postShortLinkHttpRequest{}
-	json.NewDecoder(req.Body).Decode(&request)
+	if err := json.NewDecoder(req.Body).Decode(&request); err != nil {
+		h.logger.Error(req.Context(), "PostShortLinkHTTPHanlder - Invalid JSON", shared_domain_context.NewField("error", err))
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("invalid request body"))
+		return
+	}
+
 	_, err := h.creator.Run(req.Context(), request.OriginalURL, request.ClientID)
 
-	if errors.Is(err, shared_domain_context.ValidationError{}) {
+	var validationErr shared_domain_context.ValidationError
+	if err != nil && errors.As(err, &validationErr) {
 		h.logger.Error(req.Context(), "PostShortLinkHTTPHanlder - Error creating short link", shared_domain_context.NewField("error", err))
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))

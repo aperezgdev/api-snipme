@@ -31,14 +31,16 @@ func (h *GetShortLinkByCodeHTTPHandler) Handler(w http.ResponseWriter, req *http
 	code := req.PathValue("code")
 
 	shortLink, err := h.finder.Run(req.Context(), code)
-	if errors.Is(err, shared_domain_context.ValidationError{}) {
+	var validationErr shared_domain_context.ValidationError
+	if errors.As(err, &validationErr) {
 		h.logger.Error(req.Context(), "ProjectHttpHandler - Error creating project", shared_domain_context.NewField("error", err))
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	if errors.Is(err, shared_domain_context.NotFoundError{}) {
+	var notFoundErr shared_domain_context.NotFoundError
+	if errors.As(err, &notFoundErr) {
 		h.logger.Error(req.Context(), "GetShortLinkByCodeHTTPHandler - Short link not found", shared_domain_context.NewField("code", code))
 		w.WriteHeader(http.StatusNotFound)
 		return

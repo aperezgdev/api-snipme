@@ -1,4 +1,4 @@
-CREATE TABLE short_link (
+CREATE TABLE IF NOT EXISTS short_link (
   id uuid PRIMARY KEY,
   original_route TEXT NOT NULL,
   client_id uuid NULL,

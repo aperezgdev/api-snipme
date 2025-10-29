@@ -2,12 +2,14 @@ package infrastructure
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/aperezgdev/api-snipme/db/generated"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/domain"
 	"github.com/aperezgdev/api-snipme/src/pkg"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -69,6 +71,12 @@ func (r *SqlcShortLinkRepository) Remove(ctx context.Context, id shared_domain_c
 func (r *SqlcShortLinkRepository) FindByCode(ctx context.Context, code domain.ShortLinkCode) (pkg.Optional[*domain.ShortLink], error) {
 	r.logger.Info(ctx, "SqlcShortLinkRepository - FindByCode - Params into", shared_domain_context.NewField("code", string(code)))
 	shortLink, err := r.queries.FindShortLinkByCode(ctx, string(code))
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		r.logger.Info(ctx, "SqlcShortLinkRepository - FindByCode - Short link not found", shared_domain_context.NewField("code", string(code)))
+		return pkg.EmptyOptional[*domain.ShortLink](), nil
+	}
+
 	if err != nil {
 		r.logger.Error(ctx, "SqlcShortLinkRepository - FindByCode - Error finding short link", shared_domain_context.NewField("error", err.Error()))
 		return pkg.Optional[*domain.ShortLink]{}, err
