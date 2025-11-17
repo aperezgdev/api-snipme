@@ -10,7 +10,9 @@ import (
 
 type ShortLinkRepository interface {
 	Save(ctx context.Context, shortLink *ShortLink) error
+	FindById(ctx context.Context, id domain_shared.Id) (pkg.Optional[*ShortLink], error)
 	FindByCode(ctx context.Context, code ShortLinkCode) (pkg.Optional[*ShortLink], error)
+	FindByClient(ctx context.Context, clientId domain_shared.Id) ([]*ShortLink, error)
 	Remove(ctx context.Context, id domain_shared.Id) error
 }
 
@@ -23,6 +25,11 @@ func (m *ShortLinkRepositoryMock) Save(ctx context.Context, shortLink *ShortLink
 	return args.Error(0)
 }
 
+func (m *ShortLinkRepositoryMock) FindById(ctx context.Context, id domain_shared.Id) (pkg.Optional[*ShortLink], error) {
+	args := m.Called(ctx, id)
+	return args.Get(0).(pkg.Optional[*ShortLink]), args.Error(1)
+}
+
 func (m *ShortLinkRepositoryMock) FindByCode(ctx context.Context, code ShortLinkCode) (pkg.Optional[*ShortLink], error) {
 	args := m.Called(ctx, code)
 	return args.Get(0).(pkg.Optional[*ShortLink]), args.Error(1)
@@ -31,4 +38,9 @@ func (m *ShortLinkRepositoryMock) FindByCode(ctx context.Context, code ShortLink
 func (m *ShortLinkRepositoryMock) Remove(ctx context.Context, id domain_shared.Id) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
+}
+
+func (m *ShortLinkRepositoryMock) FindByClient(ctx context.Context, clientId domain_shared.Id) ([]*ShortLink, error) {
+	args := m.Called(ctx, clientId)
+	return args.Get(0).([]*ShortLink), args.Error(1)
 }

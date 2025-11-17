@@ -3,10 +3,14 @@
 -- Insertar cliente de prueba
 INSERT INTO client (id, name, email) VALUES
   ('11111111-1111-1111-1111-111111111111', 'Test Client', 'test@example.com');
+INSERT INTO client (id, name, email) VALUES
+  ('55555555-5555-5555-5555-555555555555', 'Joe Doe', 'joe@doe.com');
 
 -- Insertar short_link de prueba
 INSERT INTO short_link (id, original_route, client_id, code) VALUES
   ('22222222-2222-2222-2222-222222222222', 'https://example.com', '11111111-1111-1111-1111-111111111111', 'testcode');
+INSERT INTO short_link (id, original_route, client_id, code) VALUES
+  ('66666666-6666-6666-6666-666666666666', 'https://expired.com', '55555555-5555-5555-5555-555555555555', 'expcode');
 
 -- Insertar analíticas de prueba
 INSERT INTO link_analytics (id, link_id, total_views, unique_visitors) VALUES

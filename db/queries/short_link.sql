@@ -12,6 +12,26 @@ SELECT
 FROM short_link
 WHERE code = $1;
 
+-- name: FindShortLinkByID :one
+SELECT
+	id,
+	original_route,
+	client_id,
+	code,
+	created_on
+FROM short_link
+WHERE id = $1;
+
+-- name: FindShortLinkByClientID :many
+SELECT
+	id,
+	original_route,
+	client_id,
+	code,
+	created_on
+	FROM short_link
+	WHERE client_id = $1;
+
 -- name: RemoveShortLink :exec
 DELETE FROM short_link
 WHERE id = $1;

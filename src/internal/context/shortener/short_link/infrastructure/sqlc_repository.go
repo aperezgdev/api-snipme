@@ -55,6 +55,34 @@ func (r *SqlcShortLinkRepository) Save(ctx context.Context, shortLink *domain.Sh
 	return nil
 }
 
+func (r *SqlcShortLinkRepository) FindById(ctx context.Context, id shared_domain_context.Id) (pkg.Optional[*domain.ShortLink], error) {
+	r.logger.Info(ctx, "SqlcShortLinkRepository - FindById - Params into", shared_domain_context.NewField("id", id.String()))
+	uuid := pgtype.UUID{}
+	_ = uuid.Scan(id.String())
+	shortLink, err := r.queries.FindShortLinkByID(ctx, uuid)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		r.logger.Info(ctx, "SqlcShortLinkRepository - FindById - Short link not found", shared_domain_context.NewField("id", id.String()))
+		return pkg.EmptyOptional[*domain.ShortLink](), nil
+	}
+
+	if err != nil {
+		r.logger.Error(ctx, "SqlcShortLinkRepository - FindById - Error finding short link", shared_domain_context.NewField("error", err.Error()))
+		return pkg.Optional[*domain.ShortLink]{}, err
+	}
+
+	clientID, _ := shared_domain_context.ParseID(shortLink.ClientID.String())
+	result := &domain.ShortLink{
+		Id:            id,
+		OriginalRoute: domain.ShortLinkOriginalRoute(shortLink.OriginalRoute),
+		Code:          domain.ShortLinkCode(shortLink.Code),
+		Client:        clientID,
+		CreatedOn:     shared_domain_context.CreatedOn(shortLink.CreatedOn.Time),
+	}
+	r.logger.Info(ctx, "SqlcShortLinkRepository - FindById - Short link found successfully", shared_domain_context.NewField("id", id.String()))
+	return pkg.Some(result), nil
+}
+
 func (r *SqlcShortLinkRepository) Remove(ctx context.Context, id shared_domain_context.Id) error {
 	r.logger.Info(ctx, "SqlcShortLinkRepository - Remove - Params into", shared_domain_context.NewField("id", id.String()))
 	uuid := pgtype.UUID{}
@@ -93,4 +121,32 @@ func (r *SqlcShortLinkRepository) FindByCode(ctx context.Context, code domain.Sh
 	}
 	r.logger.Info(ctx, "SqlcShortLinkRepository - FindByCode - Short link found successfully", shared_domain_context.NewField("id", id.String()))
 	return pkg.Some(result), nil
+}
+
+func (r *SqlcShortLinkRepository) FindByClient(ctx context.Context, clientId shared_domain_context.Id) ([]*domain.ShortLink, error) {
+	r.logger.Info(ctx, "SqlcShortLinkRepository - FindByClient - Params into", shared_domain_context.NewField("clientId", clientId.String()))
+	uuid := pgtype.UUID{}
+	_ = uuid.Scan(clientId.String())
+
+	shortLinks, err := r.queries.FindShortLinkByClientID(ctx, uuid)
+	if err != nil {
+		r.logger.Error(ctx, "SqlcShortLinkRepository - FindByClient - Error finding short links", shared_domain_context.NewField("error", err.Error()))
+		return nil, err
+	}
+
+	var results []*domain.ShortLink
+	for _, sl := range shortLinks {
+		id, _ := shared_domain_context.ParseID(sl.ID.String())
+		clientID, _ := shared_domain_context.ParseID(sl.ClientID.String())
+		result := &domain.ShortLink{
+			Id:            id,
+			OriginalRoute: domain.ShortLinkOriginalRoute(sl.OriginalRoute),
+			Code:          domain.ShortLinkCode(sl.Code),
+			Client:        clientID,
+			CreatedOn:     shared_domain_context.CreatedOn(sl.CreatedOn.Time),
+		}
+		results = append(results, result)
+	}
+	r.logger.Info(ctx, "SqlcShortLinkRepository - FindByClient - Short links found successfully", shared_domain_context.NewField("count", len(results)))
+	return results, nil
 }

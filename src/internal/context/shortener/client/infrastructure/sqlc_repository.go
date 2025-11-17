@@ -7,6 +7,8 @@ import (
 	"github.com/aperezgdev/api-snipme/db/generated"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shortener/client/domain"
+	"github.com/aperezgdev/api-snipme/src/pkg"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -15,8 +17,35 @@ type SqlcClientRepository struct {
 	logger  shared_domain_context.Logger
 }
 
-func NewSqlcClientRepository(q *generated.Queries, logger shared_domain_context.Logger) *SqlcClientRepository {
+func NewSqlcClientRepository(logger shared_domain_context.Logger, q *generated.Queries) *SqlcClientRepository {
 	return &SqlcClientRepository{queries: q, logger: logger}
+}
+
+func (r *SqlcClientRepository) FindById(ctx context.Context, id shared_domain_context.Id) (pkg.Optional[*domain.Client], error) {
+	r.logger.Info(ctx, "SqlcClientRepository - FindById - Params into", shared_domain_context.NewField("id", id.String()))
+	uuid := pgtype.UUID{}
+	_ = uuid.Scan(id.String())
+	dbClient, err := r.queries.FindClientByID(ctx, uuid)
+	if err == pgx.ErrNoRows {
+		r.logger.Info(ctx, "SqlcClientRepository - FindById - Client not found", shared_domain_context.NewField("id", id.String()))
+		return pkg.EmptyOptional[*domain.Client](), nil
+	}
+
+	if err != nil {
+		r.logger.Error(ctx, "SqlcClientRepository - FindById - Error finding client", shared_domain_context.NewField("error", err.Error()))
+		return pkg.EmptyOptional[*domain.Client](), err
+	}
+
+	idVO, _ := shared_domain_context.ParseID(dbClient.ID.String())
+
+	client := domain.Client{
+		Id:        idVO,
+		Name:      domain.ClientName(dbClient.Name),
+		Email:     domain.ClientEmail(dbClient.Email),
+		CreatedOn: shared_domain_context.CreatedOn(dbClient.CreatedOn.Time),
+	}
+	r.logger.Info(ctx, "SqlcClientRepository - FindById - Client found successfully", shared_domain_context.NewField("id", client.Id.String()))
+	return pkg.Some(&client), nil
 }
 
 func (r *SqlcClientRepository) Save(ctx context.Context, client domain.Client) error {

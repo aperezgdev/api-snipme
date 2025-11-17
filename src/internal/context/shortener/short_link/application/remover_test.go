@@ -7,6 +7,7 @@ import (
 
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/domain"
+	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -21,6 +22,11 @@ func TestShortLinkRemover_Run(t *testing.T) {
 		id := "00000000-0000-0000-0000-000000000000"
 		domainId, _ := shared_domain_context.ParseID(id)
 
+		shortLink := domain.ShortLink{
+			Id: domainId,
+		}
+
+		repo.On("FindById", mock.Anything, domainId).Return(pkg.Some(&shortLink), nil)
 		repo.On("Remove", mock.Anything, domainId).Return(nil)
 
 		err := remover.Run(context.Background(), id)
@@ -38,6 +44,12 @@ func TestShortLinkRemover_Run(t *testing.T) {
 
 		id := "00000000-0000-0000-0000-000000000000"
 		domainId, _ := shared_domain_context.ParseID(id)
+
+		shortLink := domain.ShortLink{
+			Id: domainId,
+		}
+
+		repo.On("FindById", mock.Anything, domainId).Return(pkg.Some(&shortLink), nil)
 
 		repo.On("Remove", mock.Anything, domainId).Return(errors.New("database error"))
 
@@ -60,5 +72,28 @@ func TestShortLinkRemover_Run(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Expected error, got nil")
 		}
+	})
+
+	t.Run("Run fails when short link not found", func(t *testing.T) {
+		t.Parallel()
+		repo := &domain.ShortLinkRepositoryMock{}
+		remover := NewShortLinkRemover(logger, repo)
+
+		id := "00000000-0000-0000-0000-000000000000"
+		domainId, _ := shared_domain_context.ParseID(id)
+
+		repo.On("FindById", mock.Anything, domainId).Return(pkg.EmptyOptional[*domain.ShortLink](), nil)
+
+		err := remover.Run(context.Background(), id)
+		if err == nil {
+			t.Fatalf("Expected error, got nil")
+		}
+
+		var notFoundErr shared_domain_context.NotFoundError
+		if !errors.As(err, &notFoundErr) {
+			t.Fatalf("Expected NotFoundError, got %v", err)
+		}
+
+		repo.AssertExpectations(t)
 	})
 }

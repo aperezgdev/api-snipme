@@ -50,6 +50,17 @@ func (r *RedisShortLinkRepository) Save(ctx context.Context, shortLink *shortlin
 	return nil
 }
 
+func (r *RedisShortLinkRepository) FindById(ctx context.Context, id domain.Id) (pkg.Optional[*shortlink_domain.ShortLink], error) {
+	r.logger.Info(ctx, "RedisShortLinkRepository - FindById - Params into", domain.NewField("id", id.String()))
+	result, err := r.repo.FindById(ctx, id)
+	if err != nil {
+		r.logger.Error(ctx, "RedisShortLinkRepository - FindById - Error finding in repo", domain.NewField("error", err.Error()))
+		return pkg.Optional[*shortlink_domain.ShortLink]{}, err
+	}
+	r.logger.Info(ctx, "RedisShortLinkRepository - FindById - Success", domain.NewField("id", id.String()))
+	return result, nil
+}
+
 func (r *RedisShortLinkRepository) Remove(ctx context.Context, id domain.Id) error {
 	r.logger.Info(ctx, "RedisShortLinkRepository - Remove - Params into", domain.NewField("id", id.String()))
 	err := r.repo.Remove(ctx, id)
@@ -96,6 +107,17 @@ func (r *RedisShortLinkRepository) FindByCode(ctx context.Context, code shortlin
 	}
 	r.logger.Info(ctx, "RedisShortLinkRepository - FindByCode - Success", domain.NewField("code", string(code)))
 	return result, nil
+}
+
+func (r *RedisShortLinkRepository) FindByClient(ctx context.Context, clientId domain.Id) ([]*shortlink_domain.ShortLink, error) {
+	r.logger.Info(ctx, "RedisShortLinkRepository - FindByClient - Params into", domain.NewField("clientId", clientId.String()))
+	links, err := r.repo.FindByClient(ctx, clientId)
+	if err != nil {
+		r.logger.Error(ctx, "RedisShortLinkRepository - FindByClient - Error finding in repo", domain.NewField("error", err.Error()))
+		return nil, err
+	}
+	r.logger.Info(ctx, "RedisShortLinkRepository - FindByClient - Success", domain.NewField("count", len(links)))
+	return links, nil
 }
 
 func (r *RedisShortLinkRepository) codeKey(code shortlink_domain.ShortLinkCode) string {

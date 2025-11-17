@@ -14,6 +14,7 @@ import (
 	"github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http"
 	shared_infrastructure_http_handler "github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http/handler"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http/middleware"
+	client_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/shortener/client/infrastructure"
 	short_link_application "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/application"
 	short_link_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure"
 	short_link_cache "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure/cache"
@@ -63,10 +64,13 @@ func Run() error {
 		logger,
 	)
 
+	clientRepo := client_infrastructure.NewSqlcClientRepository(logger, queries)
 	linkVisitRepository := link_visit_infrastructure.NewSqlcLinkVisitRepository(logger, queries)
 
 	shortLinkFinderByCode := short_link_application.NewShortLinkFinderByCode(logger, shortLinkRepository)
+	shortLinkFinderByClient := short_link_application.NewShortLinkFinderByClient(logger, shortLinkRepository, clientRepo)
 	shortLinkCreator := short_link_application.NewShortLinkCreator(logger, shortLinkRepository, &eventBus)
+	shortLinkRemover := short_link_application.NewShortLinkRemover(logger, shortLinkRepository)
 
 	linkVisitCreator := link_visit_creator.NewLinkVisitCreator(logger, linkVisitRepository)
 
@@ -74,6 +78,8 @@ func Run() error {
 
 	getShortLink := short_link_http.NewGetShortLinkByCodeHTTPHandler(logger, *shortLinkFinderByCode, *linkVisitCreator)
 	postShortLink := short_link_http.NewPostShortLinkHTTPHandler(logger, *shortLinkCreator)
+	deleteShortLink := short_link_http.NewDeleteShortLinkHTTPHandler(logger, *shortLinkRemover)
+	getShortLinkByClient := short_link_http.NewGetShortLinkByClientHTTPHandler(logger, *shortLinkFinderByClient)
 
 	router := http.NewRouter([]http.Middleware{
 		middleware.NewRecoveryMiddleware(logger),
@@ -81,7 +87,7 @@ func Run() error {
 		middleware.NewPrometheusMiddleware(),
 		middleware.NewRequestIDMiddleware(logger),
 		middleware.NewRateLimitMiddleware(logger, rate.Every(100*time.Millisecond), 5),
-	}, getStatus, getShortLink, postShortLink)
+	}, getStatus, getShortLink, postShortLink, deleteShortLink, getShortLinkByClient)
 
 	server := http.NewServer(logger, router, conf)
 
