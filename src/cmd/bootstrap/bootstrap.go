@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/aperezgdev/api-snipme/db/generated"
+	link_analytics_application "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/application"
+	link_analytics_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/infrastructure"
 	link_visit_creator "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/application"
 	link_visit_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/infrastructure"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
@@ -17,6 +19,9 @@ import (
 	client_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/shortener/client/infrastructure"
 	short_link_application "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/application"
 	short_link_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure"
+	"github.com/robfig/cron/v3"
+
+	link_visit_domain "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/domain"
 	short_link_cache "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure/cache"
 	short_link_http "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure/http"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -66,6 +71,7 @@ func Run() error {
 
 	clientRepo := client_infrastructure.NewSqlcClientRepository(logger, queries)
 	linkVisitRepository := link_visit_infrastructure.NewSqlcLinkVisitRepository(logger, queries)
+	linkAnalytics := link_analytics_infrastructure.NewSqlcLinkAnalyticsRepository(logger, queries)
 
 	shortLinkFinderByCode := short_link_application.NewShortLinkFinderByCode(logger, shortLinkRepository)
 	shortLinkFinderByClient := short_link_application.NewShortLinkFinderByClient(logger, shortLinkRepository, clientRepo)
@@ -73,6 +79,7 @@ func Run() error {
 	shortLinkRemover := short_link_application.NewShortLinkRemover(logger, shortLinkRepository)
 
 	linkVisitCreator := link_visit_creator.NewLinkVisitCreator(logger, linkVisitRepository)
+	linkVisitProcessor := link_visit_creator.NewLinkVisitProcessor(logger, linkVisitRepository, &eventBus)
 
 	getStatus := shared_infrastructure_http_handler.NewGetStatusHTTPHandler()
 
@@ -80,6 +87,21 @@ func Run() error {
 	postShortLink := short_link_http.NewPostShortLinkHTTPHandler(logger, *shortLinkCreator)
 	deleteShortLink := short_link_http.NewDeleteShortLinkHTTPHandler(logger, *shortLinkRemover)
 	getShortLinkByClient := short_link_http.NewGetShortLinkByClientHTTPHandler(logger, *shortLinkFinderByClient)
+
+	updaterOnLinkVisitProcessed := link_analytics_application.NewUpdaterOnLinkVisitProcessed(logger, linkAnalytics)
+	eventBus.AddSubscribers(link_visit_domain.LinkVisitsProcessedEventName, updaterOnLinkVisitProcessed)
+	creatorOnShorLinkCreated := link_analytics_application.NewCreatorOnShortLinkCreated(logger, linkAnalytics)
+	eventBus.AddSubscribers("ShortLinkCreated", creatorOnShorLinkCreated)
+
+	c := cron.New()
+	c.AddFunc("@every 15m", func() {
+		err := linkVisitProcessor.Run(context.Background())
+		if err != nil {
+			logger.Error(ctx, "Error running LinkVisitProcessor cron job", shared_domain_context.NewField("error", err))
+		}
+	})
+
+	c.Start()
 
 	router := http.NewRouter([]http.Middleware{
 		middleware.NewRecoveryMiddleware(logger),

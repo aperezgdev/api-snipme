@@ -44,7 +44,7 @@ func NewDomainEvent(aggregateId string, name string) DomainEventBase {
 }
 
 type DomainEventSubscriber interface {
-	On(context.Context, DomainEvent)
+	On(context.Context, DomainEvent) error
 }
 
 type EventBus interface {

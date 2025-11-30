@@ -11,6 +11,38 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const findByLinkID = `-- name: FindByLinkID :many
+SELECT id, link_id, total_views, unique_visitors, created_on
+FROM link_analytics
+WHERE link_id = $1
+`
+
+func (q *Queries) FindByLinkID(ctx context.Context, linkID pgtype.UUID) ([]LinkAnalytic, error) {
+	rows, err := q.db.Query(ctx, findByLinkID, linkID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []LinkAnalytic
+	for rows.Next() {
+		var i LinkAnalytic
+		if err := rows.Scan(
+			&i.ID,
+			&i.LinkID,
+			&i.TotalViews,
+			&i.UniqueVisitors,
+			&i.CreatedOn,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const removeLinkAnalyticsByLink = `-- name: RemoveLinkAnalyticsByLink :exec
 DELETE FROM link_analytics
 WHERE link_id = $1

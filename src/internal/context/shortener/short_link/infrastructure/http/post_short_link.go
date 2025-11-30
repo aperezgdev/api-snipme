@@ -9,7 +9,7 @@ import (
 	"github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/application"
 )
 
-type PostShortLinkHTTPHanlder struct {
+type PostShortLinkHTTPHandler struct {
 	logger  shared_domain_context.Logger
 	creator application.ShortLinkCreator
 }
@@ -19,14 +19,14 @@ type postShortLinkHttpRequest struct {
 	ClientID    string `json:"client_id"`
 }
 
-func NewPostShortLinkHTTPHandler(logger shared_domain_context.Logger, creator application.ShortLinkCreator) *PostShortLinkHTTPHanlder {
-	return &PostShortLinkHTTPHanlder{
+func NewPostShortLinkHTTPHandler(logger shared_domain_context.Logger, creator application.ShortLinkCreator) *PostShortLinkHTTPHandler {
+	return &PostShortLinkHTTPHandler{
 		logger:  logger,
 		creator: creator,
 	}
 }
 
-func (h *PostShortLinkHTTPHanlder) Handler(w http.ResponseWriter, req *http.Request) {
+func (h *PostShortLinkHTTPHandler) Handler(w http.ResponseWriter, req *http.Request) {
 	request := postShortLinkHttpRequest{}
 	if err := json.NewDecoder(req.Body).Decode(&request); err != nil {
 		h.logger.Error(req.Context(), "PostShortLinkHTTPHanlder - Invalid JSON", shared_domain_context.NewField("error", err))
@@ -54,10 +54,10 @@ func (h *PostShortLinkHTTPHanlder) Handler(w http.ResponseWriter, req *http.Requ
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *PostShortLinkHTTPHanlder) Route() string {
+func (h *PostShortLinkHTTPHandler) Route() string {
 	return "/short-links"
 }
 
-func (h *PostShortLinkHTTPHanlder) Method() string {
+func (h *PostShortLinkHTTPHandler) Method() string {
 	return http.MethodPost
 }

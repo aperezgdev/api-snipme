@@ -20,7 +20,7 @@ func TestLinkVisitCreator_Run(t *testing.T) {
 		creator := NewLinkVisitCreator(logger, repo)
 
 		linkId := "00000000-0000-0000-0000-000000000000"
-		ip := "192.168.1.1:80"
+		ip := "192.168.1.1"
 		userAgent := "Mozilla/5.0"
 
 		repo.On("Save", mock.Anything, mock.AnythingOfType("domain.LinkVisit")).Return(nil)
@@ -29,8 +29,8 @@ func TestLinkVisitCreator_Run(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
-		if netip.AddrPort(result.Ip).String() != ip || string(result.UserAgent) != userAgent {
-			t.Errorf("Expected link visit with ip %s and userAgent %s, got %s and %s", ip, userAgent, netip.AddrPort(result.Ip).Addr().String(), string(result.UserAgent))
+		if netip.Addr(result.Ip).String() != ip || string(result.UserAgent) != userAgent {
+			t.Errorf("Expected link visit with ip %s and userAgent %s, got %s and %s", ip, userAgent, netip.Addr(result.Ip).String(), string(result.UserAgent))
 		}
 
 		repo.AssertExpectations(t)
@@ -57,7 +57,7 @@ func TestLinkVisitCreator_Run(t *testing.T) {
 		creator := NewLinkVisitCreator(logger, repo)
 
 		linkId := "00000000-0000-0000-0000-000000000000"
-		ip := "192.168.1.1:80"
+		ip := "192.168.1.1"
 		userAgent := "Mozilla/5.0"
 
 		repo.On("Save", mock.Anything, mock.AnythingOfType("domain.LinkVisit")).Return(errors.New("database error"))

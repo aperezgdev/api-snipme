@@ -12,6 +12,48 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const findOldLinkVisits = `-- name: FindOldLinkVisits :many
+SELECT id, link_id, ip, user_agent, created_on
+FROM link_visit
+WHERE created_on < NOW() - INTERVAL '15 minutes'
+`
+
+func (q *Queries) FindOldLinkVisits(ctx context.Context) ([]LinkVisit, error) {
+	rows, err := q.db.Query(ctx, findOldLinkVisits)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []LinkVisit
+	for rows.Next() {
+		var i LinkVisit
+		if err := rows.Scan(
+			&i.ID,
+			&i.LinkID,
+			&i.Ip,
+			&i.UserAgent,
+			&i.CreatedOn,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const removeLinkVisits = `-- name: RemoveLinkVisits :exec
+DELETE FROM link_visit
+WHERE id = ANY($1::uuid[])
+`
+
+func (q *Queries) RemoveLinkVisits(ctx context.Context, dollar_1 []pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, removeLinkVisits, dollar_1)
+	return err
+}
+
 const saveLinkVisit = `-- name: SaveLinkVisit :exec
 INSERT INTO link_visit (id, link_id, ip, user_agent, created_on)
 VALUES ($1, $2, $3, $4, $5)

@@ -9,6 +9,7 @@ import (
 
 type LinkAnalyticsRepository interface {
 	Save(ctx context.Context, linkAnalytics LinkAnalytics) error
+	FindByLinkId(ctx context.Context, idLink shared_domain.Id) (*LinkAnalytics, error)
 	Update(ctx context.Context, linkAnalytics LinkAnalytics) error
 	RemoveByLink(ctx context.Context, idLink shared_domain.Id) error
 }
@@ -20,6 +21,11 @@ type LinkAnalyticsRepositoryMock struct {
 func (m *LinkAnalyticsRepositoryMock) Save(ctx context.Context, linkAnalytics LinkAnalytics) error {
 	args := m.Called(ctx, linkAnalytics)
 	return args.Error(0)
+}
+
+func (m *LinkAnalyticsRepositoryMock) FindByLinkId(ctx context.Context, idLink shared_domain.Id) (*LinkAnalytics, error) {
+	args := m.Called(ctx, idLink)
+	return args.Get(0).(*LinkAnalytics), args.Error(1)
 }
 
 func (m *LinkAnalyticsRepositoryMock) Update(ctx context.Context, linkAnalytics LinkAnalytics) error {

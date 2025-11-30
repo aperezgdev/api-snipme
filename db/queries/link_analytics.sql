@@ -21,3 +21,8 @@ WHERE
 -- name: RemoveLinkAnalyticsByLink :exec
 DELETE FROM link_analytics
 WHERE link_id = $1;
+
+-- name: FindByLinkID :many
+SELECT id, link_id, total_views, unique_visitors, created_on
+FROM link_analytics
+WHERE link_id = $1;
