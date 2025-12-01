@@ -8,6 +8,7 @@ import (
 	link_analytics_domain "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/metrics/shared/domain"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
+	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -48,16 +49,22 @@ func (r *SqlcLinkAnalyticsRepository) Save(ctx context.Context, analytics link_a
 	return nil
 }
 
-func (r *SqlcLinkAnalyticsRepository) FindByLinkId(ctx context.Context, linkId shared_domain_context.Id) (*link_analytics_domain.LinkAnalytics, error) {
+func (r *SqlcLinkAnalyticsRepository) FindByLinkId(ctx context.Context, linkId shared_domain_context.Id) (pkg.Optional[*link_analytics_domain.LinkAnalytics], error) {
 	r.logger.Info(ctx, "SqlcLinkAnalyticsRepository - FindByLinkId - Params into", shared_domain_context.NewField("linkId", linkId.String()))
 	id := pgtype.UUID{}
 	_ = id.Scan(linkId.String())
 
 	rows,  err := r.queries.FindByLinkID(ctx, id)
+	if rows == nil || len(rows) == 0 {
+		r.logger.Info(ctx, "SqlcLinkAnalyticsRepository - FindByLinkId - LinkAnalytics not found", shared_domain_context.NewField("linkId", linkId.String()))
+		return pkg.EmptyOptional[*link_analytics_domain.LinkAnalytics](), nil
+	}
+
 	if err != nil {
 		r.logger.Error(ctx, "SqlcLinkAnalyticsRepository - FindByLinkId - Error at finding", shared_domain_context.NewField("error", err.Error()))
-		return nil, err
+		return pkg.EmptyOptional[*link_analytics_domain.LinkAnalytics](), err
 	}
+	
 	row := rows[0]
 
 	linkAnalytics := link_analytics_domain.LinkAnalytics{
@@ -69,7 +76,7 @@ func (r *SqlcLinkAnalyticsRepository) FindByLinkId(ctx context.Context, linkId s
 	}
 
 	r.logger.Info(ctx, "SqlcLinkAnalyticsRepository - FindByLinkId - Find successfully", shared_domain_context.NewField("linkId", linkId.String()))
-	return &linkAnalytics, nil
+	return pkg.Some(&linkAnalytics), nil
 }
 
 func (r *SqlcLinkAnalyticsRepository) Update(ctx context.Context, analytics link_analytics_domain.LinkAnalytics) error {

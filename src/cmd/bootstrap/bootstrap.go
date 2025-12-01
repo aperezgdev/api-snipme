@@ -8,6 +8,7 @@ import (
 	"github.com/aperezgdev/api-snipme/db/generated"
 	link_analytics_application "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/application"
 	link_analytics_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/infrastructure"
+	link_analytics_http "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/infrastructure/http"
 	link_visit_creator "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/application"
 	link_visit_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/infrastructure"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
@@ -84,6 +85,7 @@ func Run() error {
 	getStatus := shared_infrastructure_http_handler.NewGetStatusHTTPHandler()
 
 	getShortLink := short_link_http.NewGetShortLinkByCodeHTTPHandler(logger, *shortLinkFinderByCode, *linkVisitCreator)
+	getLinkAnalyticsByLink := link_analytics_http.NewGetLinkAnalyticsByLinkHTTPHandler(logger, *link_analytics_application.NewLinkAnalyticsFinder(logger, linkAnalytics))
 	postShortLink := short_link_http.NewPostShortLinkHTTPHandler(logger, *shortLinkCreator)
 	deleteShortLink := short_link_http.NewDeleteShortLinkHTTPHandler(logger, *shortLinkRemover)
 	getShortLinkByClient := short_link_http.NewGetShortLinkByClientHTTPHandler(logger, *shortLinkFinderByClient)
@@ -109,7 +111,7 @@ func Run() error {
 		middleware.NewPrometheusMiddleware(),
 		middleware.NewRequestIDMiddleware(logger),
 		middleware.NewRateLimitMiddleware(logger, rate.Every(100*time.Millisecond), 5),
-	}, getStatus, getShortLink, postShortLink, deleteShortLink, getShortLinkByClient)
+	}, getStatus, getShortLink, postShortLink, deleteShortLink, getShortLinkByClient, getLinkAnalyticsByLink)
 
 	server := http.NewServer(logger, router, conf)
 

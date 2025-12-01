@@ -10,6 +10,7 @@ import (
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/metrics/shared/domain"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	short_link_domain "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/domain"
+	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -33,8 +34,8 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2)
 
-		repo.On("FindByLinkId", mock.Anything, domainId).Return(existingLinkAnalytics, nil)
-		repo.On("Save", mock.Anything, mock.AnythingOfType("domain.LinkAnalytics")).Return(nil)
+		repo.On("FindByLinkId", mock.Anything, domainId).Return(pkg.Some(existingLinkAnalytics), nil)
+		repo.On("Update", mock.Anything, mock.AnythingOfType("domain.LinkAnalytics")).Return(nil)
 
 		err := updater.On(context.Background(), event)
 		if err != nil {
@@ -43,7 +44,7 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		repo.AssertExpectations(t)
 		
-		repo.AssertCalled(t, "Save", mock.Anything, mock.MatchedBy(func(la domain.LinkAnalytics) bool {
+		repo.AssertCalled(t, "Update", mock.Anything, mock.MatchedBy(func(la domain.LinkAnalytics) bool {
 				return uint(la.TotalViews) == 13 && uint(la.UniqueViews) == 7
 		}))
 	})
@@ -58,7 +59,7 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2)
 
-		repo.On("FindByLinkId", mock.Anything, domainId).Return(&domain.LinkAnalytics{}, errors.New("not found"))
+		repo.On("FindByLinkId", mock.Anything, domainId).Return(pkg.EmptyOptional[*domain.LinkAnalytics](), errors.New("not found"))
 
 		err := updater.On(context.Background(), event)
 		if err == nil {
@@ -86,8 +87,8 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2)
 
-		repo.On("FindByLinkId", mock.Anything, domainId).Return(existingLinkAnalytics, nil)
-		repo.On("Save", mock.Anything, mock.AnythingOfType("domain.LinkAnalytics")).Return(errors.New("database error"))
+		repo.On("FindByLinkId", mock.Anything, domainId).Return(pkg.Some(existingLinkAnalytics), nil)
+		repo.On("Update", mock.Anything, mock.AnythingOfType("domain.LinkAnalytics")).Return(errors.New("database error"))
 
 		err := updater.On(context.Background(), event)
 		if err == nil {
@@ -110,6 +111,6 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 		}
 
 		repo.AssertNotCalled(t, "FindByLinkId")
-		repo.AssertNotCalled(t, "Save")
+		repo.AssertNotCalled(t, "Update")
 	})
 }

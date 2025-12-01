@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
+	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -23,7 +24,7 @@ func TestLinkAnalyticsFinder(t *testing.T) {
 				LinkId: domainId,
 		}
 
-		repo.On("FindByLinkId", mock.Anything, domainId).Return(linkAnalytics, nil)
+		repo.On("FindByLinkId", mock.Anything, domainId).Return(pkg.Some(linkAnalytics), nil)
 
 		foundLinkAnalytics, err := finder.Run(context.Background(), linkId)
 		if err != nil {
@@ -43,7 +44,7 @@ func TestLinkAnalyticsFinder(t *testing.T) {
 		linkId := "00000000-0000-0000-0000-000000000000"
 		domainId, _ := shared_domain_context.ParseID(linkId)
 
-		repo.On("FindByLinkId", mock.Anything, domainId).Return(&LinkAnalytics{}, errors.New("not found"))
+		repo.On("FindByLinkId", mock.Anything, domainId).Return(pkg.EmptyOptional[*LinkAnalytics](), errors.New("not found"))
 
 		_, err := finder.Run(context.Background(), linkId)
 		if err == nil {
