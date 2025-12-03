@@ -6,6 +6,10 @@ import (
 	"time"
 
 	"github.com/aperezgdev/api-snipme/db/generated"
+	auth_application "github.com/aperezgdev/api-snipme/src/internal/context/authentication/application"
+	auth_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	auth_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
+	auth_http "github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure/http"
 	link_analytics_application "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/application"
 	link_analytics_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/infrastructure"
 	link_analytics_http "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/infrastructure/http"
@@ -17,6 +21,7 @@ import (
 	"github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http"
 	shared_infrastructure_http_handler "github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http/handler"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http/middleware"
+	client_application "github.com/aperezgdev/api-snipme/src/internal/context/shortener/client/application"
 	client_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/shortener/client/infrastructure"
 	short_link_application "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/application"
 	short_link_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure"
@@ -62,7 +67,7 @@ func Run() error {
 	})
 	defer redisClient.Close()
 
-	cache := shared_cache.NewRedisCache(redisClient)
+	cache := shared_cache.NewRedisCache(logger, redisClient)
 	shortLinkRepository := short_link_cache.NewRedisShortLinkRepository(
 		short_link_infrastructure.NewSqlcShortLinkRepository(logger, queries),
 		cache,
@@ -73,6 +78,35 @@ func Run() error {
 	clientRepo := client_infrastructure.NewSqlcClientRepository(logger, queries)
 	linkVisitRepository := link_visit_infrastructure.NewSqlcLinkVisitRepository(logger, queries)
 	linkAnalytics := link_analytics_infrastructure.NewSqlcLinkAnalyticsRepository(logger, queries)
+
+	userRepository := auth_infrastructure.NewSqlcUserRepository(logger, queries)
+	refreshTokenRepository := auth_infrastructure.NewSqlcRefreshTokenRepository(logger, queries)
+
+	jwtManager := auth_infrastructure.NewJWTManager(conf.JWT.Secret, conf.JWT.ExpirationMinutes)
+
+	googleOAuthClient := auth_infrastructure.NewGoogleOAuthClient(
+		conf.OAuth.GoogleClientID,
+		conf.OAuth.GoogleClientSecret,
+		conf.OAuth.GoogleRedirectURL,
+	)
+	githubOAuthClient := auth_infrastructure.NewGitHubOAuthClient(
+		conf.OAuth.GitHubClientID,
+		conf.OAuth.GitHubClientSecret,
+		conf.OAuth.GitHubRedirectURL,
+	)
+
+	authenticator := auth_application.NewAuthenticator(
+		logger,
+		userRepository,
+		refreshTokenRepository,
+		jwtManager,
+		&eventBus,
+		conf.JWT.RefreshTokenTTLDays,
+		conf.JWT.ExpirationMinutes,
+	)
+
+	tokenValidator := auth_application.NewTokenValidator(logger, jwtManager, userRepository)
+	tokenRefresher := auth_application.NewTokenRefresher(logger, refreshTokenRepository, userRepository, jwtManager, conf.JWT.ExpirationMinutes)
 
 	shortLinkFinderByCode := short_link_application.NewShortLinkFinderByCode(logger, shortLinkRepository)
 	shortLinkFinderByClient := short_link_application.NewShortLinkFinderByClient(logger, shortLinkRepository, clientRepo)
@@ -90,10 +124,18 @@ func Run() error {
 	deleteShortLink := short_link_http.NewDeleteShortLinkHTTPHandler(logger, *shortLinkRemover)
 	getShortLinkByClient := short_link_http.NewGetShortLinkByClientHTTPHandler(logger, *shortLinkFinderByClient)
 
+	googleLoginHandler := auth_http.NewGetOAuthLoginHandler(logger, googleOAuthClient, "google", conf.OAuth.StateSecret)
+	googleCallbackHandler := auth_http.NewGetOAuthCallbackHandler(logger, googleOAuthClient, authenticator, auth_domain.OAuthProviderGoogle, conf.OAuth.StateSecret)
+	githubLoginHandler := auth_http.NewGetOAuthLoginHandler(logger, githubOAuthClient, "github", conf.OAuth.StateSecret)
+	githubCallbackHandler := auth_http.NewGetOAuthCallbackHandler(logger, githubOAuthClient, authenticator, auth_domain.OAuthProviderGitHub, conf.OAuth.StateSecret)
+	refreshTokenHandler := auth_http.NewPostRefreshTokenHandler(logger, tokenRefresher)
+
 	updaterOnLinkVisitProcessed := link_analytics_application.NewUpdaterOnLinkVisitProcessed(logger, linkAnalytics)
 	eventBus.AddSubscribers(link_visit_domain.LinkVisitsProcessedEventName, updaterOnLinkVisitProcessed)
 	creatorOnShorLinkCreated := link_analytics_application.NewCreatorOnShortLinkCreated(logger, linkAnalytics)
 	eventBus.AddSubscribers("ShortLinkCreated", creatorOnShorLinkCreated)
+	creatorOnUserCreated := client_application.NewCreatorOnUserCreated(logger, clientRepo)
+	eventBus.AddSubscribers(auth_domain.UserCreatedEventName, creatorOnUserCreated)
 
 	c := cron.New()
 	c.AddFunc("@every 15m", func() {
@@ -105,13 +147,39 @@ func Run() error {
 
 	c.Start()
 
-	router := http.NewRouter([]http.Middleware{
+	globalMiddlewares := []http.Middleware{
 		middleware.NewRecoveryMiddleware(logger),
 		middleware.NewLoggerMiddleware(logger),
 		middleware.NewPrometheusMiddleware(),
 		middleware.NewRequestIDMiddleware(logger),
 		middleware.NewRateLimitMiddleware(logger, rate.Every(100*time.Millisecond), 5),
-	}, getStatus, getShortLink, postShortLink, deleteShortLink, getShortLinkByClient, getLinkAnalyticsByLink)
+	}
+
+	authMiddleware := middleware.NewAuthenticationMiddleware(logger, tokenValidator)
+	protectedMiddlewares := append(globalMiddlewares, authMiddleware)
+
+	publicRoutes := []http.Route{
+		getStatus,
+		getShortLink,
+		googleLoginHandler,
+		googleCallbackHandler,
+		githubLoginHandler,
+		githubCallbackHandler,
+		refreshTokenHandler,
+	}
+
+	protectedRoutes := []http.Route{
+		postShortLink,
+		deleteShortLink,
+		getShortLinkByClient,
+		getLinkAnalyticsByLink,
+	}
+
+	router := http.NewRouter(globalMiddlewares, publicRoutes...)
+
+	for _, route := range protectedRoutes {
+		router.RegisterRoute(route, protectedMiddlewares...)
+	}
 
 	server := http.NewServer(logger, router, conf)
 

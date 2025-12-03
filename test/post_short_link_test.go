@@ -39,6 +39,7 @@ func TestPostShortLinkTest(t *testing.T) {
 			Header:        make(http.Header),
 		}
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
 
 		resp, err := client.Do(req)
 		if err != nil {
@@ -65,6 +66,7 @@ func TestPostShortLinkTest(t *testing.T) {
 			Header:        make(http.Header),
 		}
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
 
 		resp, err := client.Do(req)
 		if err != nil {

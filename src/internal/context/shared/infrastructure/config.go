@@ -13,7 +13,10 @@ type Config struct {
 	Server   ServerConfig
 	Redis    RedisConfig
 	Loki     LokiConfig
+	OAuth    OAuthConfig
+	JWT      JWTConfig
 }
+
 type AppConfig struct {
 	Name    string
 	Version string
@@ -40,6 +43,22 @@ type RedisConfig struct {
 	Password string
 }
 
+type OAuthConfig struct {
+	GoogleClientID     string
+	GoogleClientSecret string
+	GoogleRedirectURL  string
+	GitHubClientID     string
+	GitHubClientSecret string
+	GitHubRedirectURL  string
+	StateSecret        string
+}
+
+type JWTConfig struct {
+	Secret             string
+	ExpirationMinutes  int
+	RefreshTokenTTLDays int
+}
+
 func Load() *Config {
 	err := godotenv.Load()
 	_, envExist := os.LookupEnv("ENV")
@@ -50,6 +69,16 @@ func Load() *Config {
 	serverPort, err := strconv.ParseUint(getEnv("SERVER_PORT", "8081"), 10, 16)
 	if err != nil {
 		panic("Invalid SERVER_PORT value in .env file")
+	}
+
+	jwtExpirationMinutes, err := strconv.Atoi(getEnv("JWT_EXPIRATION_MINUTES", "60"))
+	if err != nil {
+		panic("Invalid JWT_EXPIRATION_MINUTES value in .env file")
+	}
+
+	refreshTokenTTLDays, err := strconv.Atoi(getEnv("REFRESH_TOKEN_TTL_DAYS", "30"))
+	if err != nil {
+		panic("Invalid REFRESH_TOKEN_TTL_DAYS value in .env file")
 	}
 
 	cfg := &Config{
@@ -71,6 +100,28 @@ func Load() *Config {
 		Loki: LokiConfig{
 			Url: getEnv("LOKI_URL", ""),
 		},
+		OAuth: OAuthConfig{
+			GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
+			GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
+			GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://localhost:8081/auth/google/callback"),
+			GitHubClientID:     getEnv("GITHUB_CLIENT_ID", ""),
+			GitHubClientSecret: getEnv("GITHUB_CLIENT_SECRET", ""),
+			GitHubRedirectURL:  getEnv("GITHUB_REDIRECT_URL", "http://localhost:8081/auth/github/callback"),
+			StateSecret:        getEnv("OAUTH_STATE_SECRET", ""),
+		},
+		JWT: JWTConfig{
+			Secret:              getEnv("JWT_SECRET", ""),
+			ExpirationMinutes:   jwtExpirationMinutes,
+			RefreshTokenTTLDays: refreshTokenTTLDays,
+		},
+	}
+
+	if cfg.JWT.Secret == "" {
+		panic("JWT_SECRET is required in .env file")
+	}
+
+	if cfg.OAuth.StateSecret == "" {
+		panic("OAUTH_STATE_SECRET is required in .env file")
 	}
 
 	return cfg

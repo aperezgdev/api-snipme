@@ -14,6 +14,7 @@ type Client struct {
 	ID        pgtype.UUID
 	Name      string
 	Email     string
+	UserID    pgtype.UUID
 	CreatedOn pgtype.Timestamptz
 }
 
@@ -42,10 +43,26 @@ type LinkVisit struct {
 	CreatedOn pgtype.Timestamptz
 }
 
+type RefreshToken struct {
+	ID        pgtype.UUID
+	UserID    pgtype.UUID
+	Token     string
+	ExpiresAt pgtype.Timestamptz
+	CreatedOn pgtype.Timestamptz
+}
+
 type ShortLink struct {
 	ID            pgtype.UUID
 	OriginalRoute string
 	ClientID      pgtype.UUID
 	Code          string
+	CreatedOn     pgtype.Timestamptz
+}
+
+type User struct {
+	ID            pgtype.UUID
+	Email         string
+	OauthProvider string
+	OauthSubject  string
 	CreatedOn     pgtype.Timestamptz
 }

@@ -1,0 +1,462 @@
+openapi: 3.1.0
+info:
+  title: API SnipMe
+  description: |
+    API REST para acortador de URLs con autenticación OAuth2 y JWT.
+
+    ## Autenticación
+
+    La API utiliza OAuth2 con Google y GitHub para autenticación, y JWT Bearer tokens para autorización.
+
+    ### Flujo de autenticación:
+    1. Redirigir al usuario a `/auth/google/login` o `/auth/github/login`
+    2. El usuario autoriza la aplicación en el proveedor OAuth
+    3. La API retorna un `access_token` (JWT) y `refresh_token`
+    4. Usar el `access_token` en el header `Authorization: Bearer <token>` para endpoints protegidos
+    5. Renovar el token con `/auth/refresh` cuando expire
+
+  version: 0.1.0
+  contact:
+    name: Alex Perez Garcia
+    email: aperezgdev@gmail.com
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor local de desarrollo
+  - url: https://api.snipme.app
+    description: Servidor de producción
+
+tags:
+  - name: Health
+    description: Endpoints de estado del servicio
+  - name: Authentication
+    description: Autenticación OAuth2 y gestión de tokens
+  - name: Short Links
+    description: Gestión de enlaces cortos
+  - name: Analytics
+    description: Analíticas y métricas de enlaces
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtenido mediante OAuth2
+
+  schemas:
+    AuthenticationResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT token para autenticación
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refresh_token:
+          type: string
+          format: uuid
+          description: Token para renovar el access_token
+          example: 550e8400-e29b-41d4-a716-446655440000
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          description: Tiempo de expiración en segundos
+          example: 900
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          description: Refresh token obtenido en el login
+          example: 550e8400-e29b-41d4-a716-446655440000
+
+    CreateShortLinkRequest:
+      type: object
+      required:
+        - original_url
+        - client_id
+      properties:
+        original_url:
+          type: string
+          format: uri
+          description: URL original a acortar
+          example: https://example.com/very-long-url-to-shorten
+        client_id:
+          type: string
+          format: uuid
+          description: ID del cliente que crea el enlace
+          example: 550e8400-e29b-41d4-a716-446655440000
+
+    ShortLink:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        code:
+          type: string
+          description: Código corto único
+          example: ABC123
+        original_url:
+          type: string
+          format: uri
+          example: https://example.com/very-long-url
+        client_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        created_on:
+          type: string
+          format: date-time
+          example: 2025-12-02T21:00:00Z
+
+    LinkAnalytics:
+      type: object
+      properties:
+        link_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        total_visits:
+          type: integer
+          example: 1523
+        unique_visitors:
+          type: integer
+          example: 842
+        countries:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            ES: 523
+            US: 231
+            FR: 88
+        created_on:
+          type: string
+          format: date-time
+          example: 2025-12-02T21:00:00Z
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid request
+        message:
+          type: string
+          example: The request body is invalid
+
+paths:
+  /status:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Verifica el estado de la API
+      operationId: getStatus
+      responses:
+        '200':
+          description: API funcionando correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+                    example: 0.1.0
+
+  /auth/google/login:
+    get:
+      tags:
+        - Authentication
+      summary: Iniciar login con Google
+      description: |
+        Inicia el flujo de autenticación OAuth2 con Google.
+        Redirige al usuario a Google para autorización.
+        Después de autorizar, Google redirige a `/auth/google/callback`.
+      operationId: loginGoogle
+      responses:
+        '307':
+          description: Redirección a Google OAuth
+
+  /auth/github/login:
+    get:
+      tags:
+        - Authentication
+      summary: Iniciar login con GitHub
+      description: |
+        Inicia el flujo de autenticación OAuth2 con GitHub.
+        Redirige al usuario a GitHub para autorización.
+        Después de autorizar, GitHub redirige a `/auth/github/callback`.
+      operationId: loginGitHub
+      responses:
+        '307':
+          description: Redirección a GitHub OAuth
+
+  /auth/google/callback:
+    get:
+      tags:
+        - Authentication
+      summary: Callback de Google OAuth
+      description: Endpoint de callback después de la autenticación con Google
+      operationId: googleCallback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '401':
+          description: Error de autenticación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/github/callback:
+    get:
+      tags:
+        - Authentication
+      summary: Callback de GitHub OAuth
+      description: Endpoint de callback después de la autenticación con GitHub
+      operationId: githubCallback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '401':
+          description: Error de autenticación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Renovar access token
+      description: Renueva el access_token usando un refresh_token válido
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token renovado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '400':
+          description: Refresh token inválido o expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /short-link:
+    post:
+      tags:
+        - Short Links
+      summary: Crear enlace corto
+      description: Crea un nuevo enlace corto a partir de una URL original
+      operationId: createShortLink
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShortLinkRequest'
+      responses:
+        '201':
+          description: Enlace creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortLink'
+        '400':
+          description: Request inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags:
+        - Short Links
+      summary: Obtener enlaces por cliente
+      description: Lista todos los enlaces cortos de un cliente específico
+      operationId: getShortLinksByClient
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: client_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID del cliente
+      responses:
+        '200':
+          description: Lista de enlaces
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShortLink'
+        '401':
+          description: No autenticado
+        '404':
+          description: Cliente no encontrado
+
+  /short-link/{code}:
+    get:
+      tags:
+        - Short Links
+      summary: Obtener enlace por código
+      description: |
+        Obtiene la información de un enlace corto por su código.
+        Endpoint público que redirige automáticamente a la URL original.
+      operationId: getShortLinkByCode
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Código del enlace corto
+          example: ABC123
+      responses:
+        '302':
+          description: Redirección a la URL original
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+        '404':
+          description: Código no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /short-link/{id}:
+    delete:
+      tags:
+        - Short Links
+      summary: Eliminar enlace
+      description: Elimina un enlace corto por su ID
+      operationId: deleteShortLink
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID del enlace a eliminar
+      responses:
+        '204':
+          description: Enlace eliminado exitosamente
+        '401':
+          description: No autenticado
+        '404':
+          description: Enlace no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /link-analytics:
+    get:
+      tags:
+        - Analytics
+      summary: Obtener analíticas de enlace
+      description: Obtiene las métricas y estadísticas de un enlace específico
+      operationId: getLinkAnalytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: link_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID del enlace
+      responses:
+        '200':
+          description: Analíticas del enlace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkAnalytics'
+        '400':
+          description: Parámetro link_id inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autenticado
+        '404':
+          description: Enlace no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

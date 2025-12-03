@@ -14,14 +14,17 @@ func TestDeleteShortLinkByCodeTest(t *testing.T) {
 	client := http.Client{}
 
 	t.Run("Success - valid code", func(t *testing.T) {
-		response, err := client.Do(&http.Request{
+		req := &http.Request{
 			Method: http.MethodDelete,
 			URL: &url.URL{
 				Scheme: parsed.Scheme,
 				Host:   parsed.Host,
 				Path:   "/short-link/66666666-6666-6666-6666-666666666666",
 			},
-		})
+			Header: make(http.Header),
+		}
+		req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
+		response, err := client.Do(req)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
 		}
@@ -31,14 +34,17 @@ func TestDeleteShortLinkByCodeTest(t *testing.T) {
 	})
 
 	t.Run("Error - not existing code", func(t *testing.T) {
-		response, err := client.Do(&http.Request{
+		req := &http.Request{
 			Method: http.MethodDelete,
 			URL: &url.URL{
 				Scheme: parsed.Scheme,
 				Host:   parsed.Host,
 				Path:   "/short-link/66666666-6666-6666-6666-666666666656",
 			},
-		})
+			Header: make(http.Header),
+		}
+		req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
+		response, err := client.Do(req)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
 		}

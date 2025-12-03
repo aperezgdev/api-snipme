@@ -5,7 +5,7 @@ import domain_shared "github.com/aperezgdev/api-snipme/src/internal/context/shar
 type Client struct {
 	Id        domain_shared.Id
 	Name      ClientName
-	Email     ClientEmail
+	Email     domain_shared.Email
 	CreatedOn domain_shared.CreatedOn
 }
 
@@ -18,7 +18,7 @@ func NewClient(name, email string) (*Client, error) {
 	if err != nil {
 		return &Client{}, err
 	}
-	emailVO, err := NewClientEmail(email)
+	emailVO, err := domain_shared.NewEmail(email)
 	if err != nil {
 		return &Client{}, err
 	}

@@ -41,7 +41,7 @@ func (r *SqlcClientRepository) FindById(ctx context.Context, id shared_domain_co
 	client := domain.Client{
 		Id:        idVO,
 		Name:      domain.ClientName(dbClient.Name),
-		Email:     domain.ClientEmail(dbClient.Email),
+		Email:     shared_domain_context.Email(dbClient.Email),
 		CreatedOn: shared_domain_context.CreatedOn(dbClient.CreatedOn.Time),
 	}
 	r.logger.Info(ctx, "SqlcClientRepository - FindById - Client found successfully", shared_domain_context.NewField("id", client.Id.String()))

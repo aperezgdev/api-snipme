@@ -12,7 +12,7 @@ import (
 )
 
 const findClientByID = `-- name: FindClientByID :one
-SELECT id, name, email, created_on
+SELECT id, name, email, user_id, created_on
 FROM client
 WHERE id = $1
 `
@@ -24,6 +24,7 @@ func (q *Queries) FindClientByID(ctx context.Context, id pgtype.UUID) (Client, e
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.UserID,
 		&i.CreatedOn,
 	)
 	return i, err
@@ -40,14 +41,15 @@ func (q *Queries) RemoveClient(ctx context.Context, id pgtype.UUID) error {
 }
 
 const saveClient = `-- name: SaveClient :exec
-INSERT INTO client (id, name, email, created_on)
-VALUES ($1, $2, $3, $4)
+INSERT INTO client (id, name, email, user_id, created_on)
+VALUES ($1, $2, $3, $4, $5)
 `
 
 type SaveClientParams struct {
 	ID        pgtype.UUID
 	Name      string
 	Email     string
+	UserID    pgtype.UUID
 	CreatedOn pgtype.Timestamptz
 }
 
@@ -56,6 +58,7 @@ func (q *Queries) SaveClient(ctx context.Context, arg SaveClientParams) error {
 		arg.ID,
 		arg.Name,
 		arg.Email,
+		arg.UserID,
 		arg.CreatedOn,
 	)
 	return err

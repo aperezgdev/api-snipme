@@ -31,7 +31,9 @@ func TestGetLinkAnalyticsByLinkTest(t *testing.T) {
                     "link_id": []string{"22222222-2222-2222-2222-222222222222"},
                 }.Encode(),
             },
+            Header: make(http.Header),
         }
+        req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
 
         resp, err := client.Do(req)
         if err != nil {
@@ -65,7 +67,9 @@ func TestGetLinkAnalyticsByLinkTest(t *testing.T) {
                     "link_id": []string{"33333333-3333-3333-3333-333333333333"},
                 }.Encode(),
             },
+            Header: make(http.Header),
         }
+        req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
 
         resp, err := client.Do(req)
         if err != nil {
@@ -86,7 +90,9 @@ func TestGetLinkAnalyticsByLinkTest(t *testing.T) {
                 Host:   parsed.Host,
                 Path:   "/link-analytics",
             },
+            Header: make(http.Header),
         }
+        req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
 
         resp, err := client.Do(req)
         if err != nil {
@@ -108,7 +114,9 @@ func TestGetLinkAnalyticsByLinkTest(t *testing.T) {
                 Path:     "/link-analytics",
                 RawQuery: "link_id=invalid-uuid",
             },
+            Header: make(http.Header),
         }
+        req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
 
         resp, err := client.Do(req)
         if err != nil {

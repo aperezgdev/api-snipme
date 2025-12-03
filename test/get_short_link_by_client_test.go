@@ -14,7 +14,7 @@ func TestGetShortLinkByClient(t *testing.T) {
 	client := http.Client{}
 
 	t.Run("Success - valid client ID", func(t *testing.T) {
-		response, err := client.Do(&http.Request{
+		req := &http.Request{
 			Method: http.MethodGet,
 			URL: &url.URL{
 				Scheme: parsed.Scheme,
@@ -24,7 +24,10 @@ func TestGetShortLinkByClient(t *testing.T) {
 					"client_id": []string{"55555555-5555-5555-5555-555555555555"},
 				}.Encode(),
 			},
-		})
+			Header: make(http.Header),
+		}
+		req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
+		response, err := client.Do(req)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
 		}
@@ -35,7 +38,7 @@ func TestGetShortLinkByClient(t *testing.T) {
 	})
 
 	t.Run("Error - invalid client ID", func(t *testing.T) {
-		response, err := client.Do(&http.Request{
+		req := &http.Request{
 			Method: http.MethodGet,
 			URL: &url.URL{
 				Scheme: parsed.Scheme,
@@ -45,7 +48,10 @@ func TestGetShortLinkByClient(t *testing.T) {
 					"client_id": []string{"44444444-4444-4444-4444-444444444444"},
 				}.Encode(),
 			},
-		})
+			Header: make(http.Header),
+		}
+		req.Header.Set("Authorization", "Bearer "+TEST_TOKEN)
+		response, err := client.Do(req)
 		if err != nil {
 			t.Fatalf("Error making request: %v", err)
 		}
