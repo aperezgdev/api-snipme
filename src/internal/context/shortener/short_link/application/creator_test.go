@@ -25,7 +25,7 @@ func TestShortLinkCreator_Run(t *testing.T) {
 		repo.On("Save", mock.Anything, mock.AnythingOfType("*domain.ShortLink")).Return(nil)
 		eventBus.On("Publish", mock.Anything, mock.Anything).Return()
 
-		shortLink, err := creator.Run(context.Background(), originalLink, clientId)
+		shortLink, err := creator.Run(context.Background(), "Short Link 1", originalLink, clientId)
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
@@ -48,7 +48,7 @@ func TestShortLinkCreator_Run(t *testing.T) {
 
 		repo.On("Save", mock.Anything, mock.AnythingOfType("*domain.ShortLink")).Return(errors.New("database error"))
 
-		_, err := creator.Run(context.Background(), originalLink, clientId)
+		_, err := creator.Run(context.Background(), "Short Link 1", originalLink, clientId)
 		if err == nil {
 			t.Fatalf("Expected error, got nil")
 		}
@@ -65,7 +65,7 @@ func TestShortLinkCreator_Run(t *testing.T) {
 		originalLink := "invalid-url"
 		clientId := "00000000-0000-0000-0000-000000000000"
 
-		_, err := creator.Run(context.Background(), originalLink, clientId)
+		_, err := creator.Run(context.Background(), "Short Link 1", originalLink, clientId)
 		if err == nil {
 			t.Fatalf("Expected error, got nil")
 		}
@@ -83,7 +83,7 @@ func TestShortLinkCreator_Run(t *testing.T) {
 		repo.On("Save", mock.Anything, mock.AnythingOfType("*domain.ShortLink")).Return(nil)
 		eventBus.On("Publish", mock.Anything, mock.Anything).Return()
 
-		shortLink, err := creator.Run(context.Background(), originalLink, clientId)
+		shortLink, err := creator.Run(context.Background(), "Short Link 1", originalLink, clientId)
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}

@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS short_link (
   id uuid PRIMARY KEY,
+  summary VARCHAR(255),
   original_route TEXT NOT NULL,
   client_id uuid NULL,
   code VARCHAR(10) UNIQUE NOT NULL,

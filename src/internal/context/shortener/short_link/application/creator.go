@@ -21,9 +21,9 @@ func NewShortLinkCreator(logger shared_domain.Logger, repo domain.ShortLinkRepos
 	}
 }
 
-func (c ShortLinkCreator) Run(ctx context.Context, orignalLink, clientId string) (*domain.ShortLink, error) {
+func (c ShortLinkCreator) Run(ctx context.Context, sumary, orignalLink, clientId string) (*domain.ShortLink, error) {
 	c.looger.Info(ctx, "ShortLinkCreator - Run - Params into: ", shared_domain.NewField("originalLink", orignalLink), shared_domain.NewField("clientId", clientId))
-	shortLink, err := domain.NewShortLink(orignalLink, clientId)
+	shortLink, err := domain.NewShortLink(sumary, orignalLink, clientId)
 	if err != nil {
 		c.looger.Error(ctx, "ShortLinkCreator - Run - Error creating short link", shared_domain.NewField("error", err.Error()))
 		return nil, err

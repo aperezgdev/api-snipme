@@ -16,6 +16,7 @@ type PostShortLinkHTTPHandler struct {
 
 type postShortLinkHttpRequest struct {
 	OriginalURL string `json:"original_url"`
+	Summary 	 	string `json:"summary"`
 	ClientID    string `json:"client_id"`
 }
 
@@ -35,7 +36,7 @@ func (h *PostShortLinkHTTPHandler) Handler(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	_, err := h.creator.Run(req.Context(), request.OriginalURL, request.ClientID)
+	_, err := h.creator.Run(req.Context(), request.Summary, request.OriginalURL, request.ClientID)
 
 	var validationErr shared_domain_context.ValidationError
 	if err != nil && errors.As(err, &validationErr) {

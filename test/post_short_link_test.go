@@ -12,6 +12,7 @@ import (
 type postShortLinkRequest struct {
 	OriginalURL string `json:"original_url"`
 	ClientID    string `json:"client_id"`
+	Summary     string `json:"summary"`
 }
 
 func TestPostShortLinkTest(t *testing.T) {
@@ -25,6 +26,7 @@ func TestPostShortLinkTest(t *testing.T) {
 		body := postShortLinkRequest{
 			OriginalURL: "https://example.com",
 			ClientID:    "11111111-1111-1111-1111-111111111111",
+			Summary:			"Example Link",
 		}
 		b, _ := json.Marshal(body)
 		req := &http.Request{

@@ -5,17 +5,23 @@ import shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shar
 type ShortLink struct {
 	shared_domain.AggregateRoot
 	Id            shared_domain.Id
+	Summary 		 		ShortLinkSummary
 	OriginalRoute ShortLinkOriginalRoute
 	Code          ShortLinkCode
 	Client        shared_domain.Id
 	CreatedOn     shared_domain.CreatedOn
 }
 
-func NewShortLink(originalLink, client string) (*ShortLink, error) {
+func NewShortLink(sumary, originalLink, client string) (*ShortLink, error) {
 	idVO, err := shared_domain.NewID()
 	if err != nil {
 		return nil, err
 	}
+	sumaryVO, err := NewShortLinkSummary(sumary)
+	if err != nil {
+		return nil, err
+	}
+
 	originalPathVO, err := NewShortLinkOriginalRoute(originalLink)
 	if err != nil {
 		return nil, err
@@ -35,6 +41,7 @@ func NewShortLink(originalLink, client string) (*ShortLink, error) {
 
 	shortLink := &ShortLink{
 		Id:            idVO,
+		Summary:       sumaryVO,
 		OriginalRoute: originalPathVO,
 		Code:          codeVO,
 		Client:        clientVO,

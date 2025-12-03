@@ -39,8 +39,13 @@ func (r *SqlcShortLinkRepository) Save(ctx context.Context, shortLink *domain.Sh
 	createdOn.Time = time.Time(shortLink.CreatedOn)
 	createdOn.Valid = true
 
+	summary := pgtype.Text{}
+	summary.String = string(shortLink.Summary)
+	summary.Valid = true
+
 	err := r.queries.SaveShortLink(ctx, generated.SaveShortLinkParams{
 		ID:            id,
+		Summary:			 summary,
 		OriginalRoute: string(shortLink.OriginalRoute),
 		ClientID:      clientID,
 		Code:          string(shortLink.Code),
@@ -74,6 +79,7 @@ func (r *SqlcShortLinkRepository) FindById(ctx context.Context, id shared_domain
 	clientID, _ := shared_domain_context.ParseID(shortLink.ClientID.String())
 	result := &domain.ShortLink{
 		Id:            id,
+		Summary: 			 domain.ShortLinkSummary(shortLink.Summary.String),
 		OriginalRoute: domain.ShortLinkOriginalRoute(shortLink.OriginalRoute),
 		Code:          domain.ShortLinkCode(shortLink.Code),
 		Client:        clientID,
@@ -114,6 +120,7 @@ func (r *SqlcShortLinkRepository) FindByCode(ctx context.Context, code domain.Sh
 	clientID, _ := shared_domain_context.ParseID(shortLink.ClientID.String())
 	result := &domain.ShortLink{
 		Id:            id,
+		Summary: 			 domain.ShortLinkSummary(shortLink.Summary.String),
 		OriginalRoute: domain.ShortLinkOriginalRoute(shortLink.OriginalRoute),
 		Code:          domain.ShortLinkCode(shortLink.Code),
 		Client:        clientID,
@@ -134,19 +141,18 @@ func (r *SqlcShortLinkRepository) FindByClient(ctx context.Context, clientId sha
 		return nil, err
 	}
 
-	var results []*domain.ShortLink
-	for _, sl := range shortLinks {
+	results := pkg.Map(shortLinks, func (sl generated.ShortLink) *domain.ShortLink {
 		id, _ := shared_domain_context.ParseID(sl.ID.String())
 		clientID, _ := shared_domain_context.ParseID(sl.ClientID.String())
-		result := &domain.ShortLink{
+		return &domain.ShortLink{
 			Id:            id,
+			Summary: 			 domain.ShortLinkSummary(sl.Summary.String),
 			OriginalRoute: domain.ShortLinkOriginalRoute(sl.OriginalRoute),
 			Code:          domain.ShortLinkCode(sl.Code),
 			Client:        clientID,
 			CreatedOn:     shared_domain_context.CreatedOn(sl.CreatedOn.Time),
 		}
-		results = append(results, result)
-	}
+	})
 	r.logger.Info(ctx, "SqlcShortLinkRepository - FindByClient - Short links found successfully", shared_domain_context.NewField("count", len(results)))
 	return results, nil
 }

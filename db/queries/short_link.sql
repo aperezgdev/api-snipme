@@ -1,10 +1,11 @@
 -- name: SaveShortLink :exec
-INSERT INTO short_link (id, original_route, client_id, code, created_on)
-VALUES ($1, $2, $3, $4, $5);
+INSERT INTO short_link (id, summary, original_route, client_id, code, created_on)
+VALUES ($1, $2, $3, $4, $5, $6);
 
 -- name: FindShortLinkByCode :one
 SELECT
     id,
+		summary,
     original_route,
     client_id,
     code,
@@ -15,6 +16,7 @@ WHERE code = $1;
 -- name: FindShortLinkByID :one
 SELECT
 	id,
+	summary,
 	original_route,
 	client_id,
 	code,
@@ -25,6 +27,7 @@ WHERE id = $1;
 -- name: FindShortLinkByClientID :many
 SELECT
 	id,
+	summary,
 	original_route,
 	client_id,
 	code,

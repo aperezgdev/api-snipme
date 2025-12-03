@@ -14,6 +14,7 @@ import (
 const findShortLinkByClientID = `-- name: FindShortLinkByClientID :many
 SELECT
 	id,
+	summary,
 	original_route,
 	client_id,
 	code,
@@ -33,6 +34,7 @@ func (q *Queries) FindShortLinkByClientID(ctx context.Context, clientID pgtype.U
 		var i ShortLink
 		if err := rows.Scan(
 			&i.ID,
+			&i.Summary,
 			&i.OriginalRoute,
 			&i.ClientID,
 			&i.Code,
@@ -51,6 +53,7 @@ func (q *Queries) FindShortLinkByClientID(ctx context.Context, clientID pgtype.U
 const findShortLinkByCode = `-- name: FindShortLinkByCode :one
 SELECT
     id,
+		summary,
     original_route,
     client_id,
     code,
@@ -64,6 +67,7 @@ func (q *Queries) FindShortLinkByCode(ctx context.Context, code string) (ShortLi
 	var i ShortLink
 	err := row.Scan(
 		&i.ID,
+		&i.Summary,
 		&i.OriginalRoute,
 		&i.ClientID,
 		&i.Code,
@@ -75,6 +79,7 @@ func (q *Queries) FindShortLinkByCode(ctx context.Context, code string) (ShortLi
 const findShortLinkByID = `-- name: FindShortLinkByID :one
 SELECT
 	id,
+	summary,
 	original_route,
 	client_id,
 	code,
@@ -88,6 +93,7 @@ func (q *Queries) FindShortLinkByID(ctx context.Context, id pgtype.UUID) (ShortL
 	var i ShortLink
 	err := row.Scan(
 		&i.ID,
+		&i.Summary,
 		&i.OriginalRoute,
 		&i.ClientID,
 		&i.Code,
@@ -107,12 +113,13 @@ func (q *Queries) RemoveShortLink(ctx context.Context, id pgtype.UUID) error {
 }
 
 const saveShortLink = `-- name: SaveShortLink :exec
-INSERT INTO short_link (id, original_route, client_id, code, created_on)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO short_link (id, summary, original_route, client_id, code, created_on)
+VALUES ($1, $2, $3, $4, $5, $6)
 `
 
 type SaveShortLinkParams struct {
 	ID            pgtype.UUID
+	Summary       pgtype.Text
 	OriginalRoute string
 	ClientID      pgtype.UUID
 	Code          string
@@ -122,6 +129,7 @@ type SaveShortLinkParams struct {
 func (q *Queries) SaveShortLink(ctx context.Context, arg SaveShortLinkParams) error {
 	_, err := q.db.Exec(ctx, saveShortLink,
 		arg.ID,
+		arg.Summary,
 		arg.OriginalRoute,
 		arg.ClientID,
 		arg.Code,

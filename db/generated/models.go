@@ -53,6 +53,7 @@ type RefreshToken struct {
 
 type ShortLink struct {
 	ID            pgtype.UUID
+	Summary       pgtype.Text
 	OriginalRoute string
 	ClientID      pgtype.UUID
 	Code          string
