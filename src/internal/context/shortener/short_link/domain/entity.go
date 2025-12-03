@@ -52,3 +52,30 @@ func NewShortLink(sumary, originalLink, client string) (*ShortLink, error) {
 
 	return shortLink, nil
 }
+
+func NewPublicShortLink(originalLink string) (*ShortLink, error) {
+	idVO, err := shared_domain.NewID()
+	if err != nil {
+		return nil, err
+	}
+
+	originalPathVO, err := NewShortLinkOriginalRoute(originalLink)
+	if err != nil {
+		return nil, err
+	}
+	codeVO, err := NewCode()
+	if err != nil {
+		return nil, err
+	}
+
+	shortLink := &ShortLink{
+		Id:            idVO,
+		OriginalRoute: originalPathVO,
+		Code:          codeVO,
+		CreatedOn:     shared_domain.NewCreatedOn(),
+	}
+
+	shortLink.Record(NewShortLinkCreated(idVO.String()))
+
+	return shortLink, nil
+}

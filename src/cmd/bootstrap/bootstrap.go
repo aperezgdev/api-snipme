@@ -111,6 +111,7 @@ func Run() error {
 	shortLinkFinderByCode := short_link_application.NewShortLinkFinderByCode(logger, shortLinkRepository)
 	shortLinkFinderByClient := short_link_application.NewShortLinkFinderByClient(logger, shortLinkRepository, clientRepo)
 	shortLinkCreator := short_link_application.NewShortLinkCreator(logger, shortLinkRepository, &eventBus)
+	publShortLinkCreator := short_link_application.NewPublicShortLinkCreator(logger, shortLinkRepository, &eventBus)
 	shortLinkRemover := short_link_application.NewShortLinkRemover(logger, shortLinkRepository)
 
 	linkVisitCreator := link_visit_creator.NewLinkVisitCreator(logger, linkVisitRepository)
@@ -123,6 +124,7 @@ func Run() error {
 	postShortLink := short_link_http.NewPostShortLinkHTTPHandler(logger, *shortLinkCreator)
 	deleteShortLink := short_link_http.NewDeleteShortLinkHTTPHandler(logger, *shortLinkRemover)
 	getShortLinkByClient := short_link_http.NewGetShortLinkByClientHTTPHandler(logger, *shortLinkFinderByClient)
+	postPublicShortLink := short_link_http.NewPostPublicShortLinkHTTPHandler(logger, *publShortLinkCreator)
 
 	googleLoginHandler := auth_http.NewGetOAuthLoginHandler(logger, googleOAuthClient, "google", conf.OAuth.StateSecret)
 	googleCallbackHandler := auth_http.NewGetOAuthCallbackHandler(logger, googleOAuthClient, authenticator, auth_domain.OAuthProviderGoogle, conf.OAuth.StateSecret)
@@ -166,6 +168,7 @@ func Run() error {
 		githubLoginHandler,
 		githubCallbackHandler,
 		refreshTokenHandler,
+		postPublicShortLink,
 	}
 
 	protectedRoutes := []http.Route{
