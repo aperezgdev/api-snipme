@@ -9,14 +9,12 @@ COPY . .
 
 RUN go build -o /app/main ./src/cmd/main.go
 
-FROM debian:bookworm-slim
+FROM alpine:3.23
 
 WORKDIR /app
 COPY --from=builder /app/main /snipme-api
 
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-
-RUN useradd -m snipmeuser
+RUN adduser -D snipmeuser
 
 USER snipmeuser
 
