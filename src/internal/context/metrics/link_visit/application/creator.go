@@ -22,9 +22,9 @@ func NewLinkVisitCreator(
 	}
 }
 
-func (lc LinkVisitCreator) Run(ctx context.Context, linkId, ip, userAgent string) (*domain.LinkVisit, error) {
-	lc.logger.Info(ctx, "LinkVisitCreator - Run: Creating LinkVisit", shared_domain_context.NewField("linkId", linkId), shared_domain_context.NewField("ip", ip), shared_domain_context.NewField("userAgent", userAgent))
-	linkVisit, err := domain.NewLinkVisit(linkId, ip, userAgent)
+func (lc LinkVisitCreator) Run(ctx context.Context, linkId, visitorId, ip, userAgent string) (*domain.LinkVisit, error) {
+	lc.logger.Info(ctx, "LinkVisitCreator - Run: Creating LinkVisit", shared_domain_context.NewField("linkId", linkId), shared_domain_context.NewField("visitorId", visitorId), shared_domain_context.NewField("ip", ip), shared_domain_context.NewField("userAgent", userAgent))
+	linkVisit, err := domain.NewLinkVisit(linkId, visitorId, ip, userAgent)
 	if err != nil {
 		lc.logger.Error(ctx, "LinkVisitCreator - Run: Error creating LinkVisit entity", shared_domain_context.NewField("error", err), shared_domain_context.NewField("linkId", linkId), shared_domain_context.NewField("ip", ip), shared_domain_context.NewField("userAgent", userAgent))
 		return nil, err

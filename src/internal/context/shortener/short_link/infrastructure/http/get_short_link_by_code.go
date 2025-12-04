@@ -1,8 +1,10 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	application_link_visit "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/application"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
@@ -52,19 +54,39 @@ func (h *GetShortLinkByCodeHTTPHandler) Handler(w http.ResponseWriter, req *http
 		return
 	}
 
-	_, err = h.creator.Run(req.Context(), shortLink.Id.String(), req.RemoteAddr, req.UserAgent())
-	if errors.Is(err, shared_domain_context.ValidationError{}) {
-		h.logger.Error(req.Context(), "GetShortLinkByCodeHTTPHandler - Error creating link visit", shared_domain_context.NewField("error", err))
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
+	var visitorIdVO shared_domain_context.Id
+	if cookie, err := req.Cookie("visitor_id"); err == nil {
+		visitorIdVO, err = shared_domain_context.ParseID(cookie.Value)
+		if err != nil {
+			h.logger.Error(req.Context(), "GetShortLinkByCodeHTTPHandler - Error parsing visitor_id cookie", shared_domain_context.NewField("error", err))
+		}
+	} else {
+		visitorIdVO, err = shared_domain_context.NewID()
+		if err != nil {
+			h.logger.Error(req.Context(), "GetShortLinkByCodeHTTPHandler - Error creating new visitor ID", shared_domain_context.NewField("error", err))
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:  "visitor_id",
+			Value: visitorIdVO.String(),
+			Path: "/",
+			HttpOnly: true,
+			Secure: true,
+			MaxAge: int(time.Hour) * 24,
+		})
 	}
 
-	if err != nil {
-		h.logger.Error(req.Context(), "PostShortLinkHTTPHanlder - Internal error", shared_domain_context.NewField("error", err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	go func(ctx context.Context) {
+		_, err = h.creator.Run(ctx, shortLink.Id.String(), visitorIdVO.String(), req.RemoteAddr, req.UserAgent())
+		if errors.Is(err, shared_domain_context.ValidationError{}) {
+			h.logger.Error(ctx, "GetShortLinkByCodeHTTPHandler - Error creating link visit", shared_domain_context.NewField("error", err))
+			return
+		}
+
+		if err != nil {
+			h.logger.Error(ctx, "PostShortLinkHTTPHanlder - Internal error", shared_domain_context.NewField("error", err))
+		}
+	}(context.Background())
 
 	http.Redirect(w, req, string(shortLink.OriginalRoute), http.StatusFound)
 }

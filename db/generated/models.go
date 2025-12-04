@@ -38,6 +38,7 @@ type LinkCountryViewCounter struct {
 type LinkVisit struct {
 	ID        pgtype.UUID
 	LinkID    pgtype.UUID
+	VisitorID pgtype.UUID
 	Ip        *netip.Addr
 	UserAgent pgtype.Text
 	CreatedOn pgtype.Timestamptz

@@ -26,6 +26,7 @@ func (r *SqlcLinkVisitRepository) Save(ctx context.Context, linkVisit domain.Lin
 	r.logger.Info(ctx, "SqlcLinkVisitRepository - Save - Params into",
 		shared_domain_context.NewField("linkVisitId", linkVisit.Id.String()),
 		shared_domain_context.NewField("linkId", linkVisit.LinkId.String()),
+		shared_domain_context.NewField("visitorId", linkVisit.VisitorId.String()),
 		shared_domain_context.NewField("ip", linkVisit.Ip),
 	)
 
@@ -38,12 +39,15 @@ func (r *SqlcLinkVisitRepository) Save(ctx context.Context, linkVisit domain.Lin
 
 	linkVisitId := pgtype.UUID{}
 	_ = linkVisitId.Scan(linkVisit.LinkId.String())
+	visitorId := pgtype.UUID{}
+	_ = visitorId.Scan(linkVisit.VisitorId.String())
 
 	addr := netip.Addr(linkVisit.Ip)
 
 	params := generated.SaveLinkVisitParams{
 		ID:        id,
 		LinkID:    linkVisitId,
+		VisitorID: visitorId,
 		Ip:        &addr,
 		UserAgent: pgtype.Text{String: string(linkVisit.UserAgent), Valid: true},
 		CreatedOn: createdOn,
@@ -68,10 +72,12 @@ func (r *SqlcLinkVisitRepository) FindOlds(ctx context.Context) ([]domain.LinkVi
 	linkVisits := pkg.Map(rows, func(row generated.LinkVisit) domain.LinkVisit {
 		id, _ := shared_domain_context.ParseID(row.ID.String())
 		linkId, _ := shared_domain_context.ParseID(row.LinkID.String())
+		visitorId, _ := shared_domain_context.ParseID(row.VisitorID.String())
 
 		return domain.LinkVisit{
 			Id:        id,
 			LinkId:    linkId,
+			VisitorId: visitorId,
 			Ip:        domain.LinkVisitIP(*row.Ip),
 			UserAgent: domain.LinkVisitUserAgent(row.UserAgent.String),
 			CreatedOn: shared_domain_context.CreatedOn(row.CreatedOn.Time),

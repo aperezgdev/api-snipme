@@ -21,5 +21,5 @@ INSERT INTO link_country_view_counter (id, link_id, country_code, total_views, u
   ('44444444-4444-4444-4444-444444444444', '22222222-2222-2222-2222-222222222222', 'ES', 7, 3);
 
 -- Insertar visita de prueba
-INSERT INTO link_visit (id, link_id, ip, user_agent) VALUES
-  ('55555555-5555-5555-5555-555555555555', '22222222-2222-2222-2222-222222222222', '127.0.0.1', 'test-agent');
+INSERT INTO link_visit (id, link_id, visitor_id, ip, user_agent) VALUES
+  ('55555555-5555-5555-5555-555555555555', '11111111-1111-1111-1111-111111111111' ,'22222222-2222-2222-2222-222222222222', '127.0.0.1', 'test-agent');

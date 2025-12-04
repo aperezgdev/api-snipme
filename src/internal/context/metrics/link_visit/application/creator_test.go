@@ -20,12 +20,13 @@ func TestLinkVisitCreator_Run(t *testing.T) {
 		creator := NewLinkVisitCreator(logger, repo)
 
 		linkId := "00000000-0000-0000-0000-000000000000"
+		visitorId := "11111111-1111-1111-1111-111111111111"
 		ip := "192.168.1.1"
 		userAgent := "Mozilla/5.0"
 
 		repo.On("Save", mock.Anything, mock.AnythingOfType("domain.LinkVisit")).Return(nil)
 
-		result, err := creator.Run(context.Background(), linkId, ip, userAgent)
+		result, err := creator.Run(context.Background(), linkId, visitorId, ip, userAgent)
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
@@ -42,10 +43,11 @@ func TestLinkVisitCreator_Run(t *testing.T) {
 		creator := NewLinkVisitCreator(logger, repo)
 
 		linkId := ""
+		visitorId := ""
 		ip := ""
 		userAgent := ""
 
-		_, err := creator.Run(context.Background(), linkId, ip, userAgent)
+		_, err := creator.Run(context.Background(), linkId, visitorId, ip, userAgent)
 		if err == nil {
 			t.Fatalf("Expected error, got nil")
 		}
@@ -57,12 +59,13 @@ func TestLinkVisitCreator_Run(t *testing.T) {
 		creator := NewLinkVisitCreator(logger, repo)
 
 		linkId := "00000000-0000-0000-0000-000000000000"
+		visitorId := "11111111-1111-1111-1111-111111111111"
 		ip := "192.168.1.1"
 		userAgent := "Mozilla/5.0"
 
 		repo.On("Save", mock.Anything, mock.AnythingOfType("domain.LinkVisit")).Return(errors.New("database error"))
 
-		_, err := creator.Run(context.Background(), linkId, ip, userAgent)
+		_, err := creator.Run(context.Background(), linkId, visitorId, ip, userAgent)
 		if err == nil {
 			t.Fatalf("Expected error, got nil")
 		}

@@ -13,7 +13,7 @@ import (
 )
 
 const findOldLinkVisits = `-- name: FindOldLinkVisits :many
-SELECT id, link_id, ip, user_agent, created_on
+SELECT id, link_id, visitor_id, ip, user_agent, created_on
 FROM link_visit
 WHERE created_on < NOW() - INTERVAL '15 minutes'
 `
@@ -30,6 +30,7 @@ func (q *Queries) FindOldLinkVisits(ctx context.Context) ([]LinkVisit, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.LinkID,
+			&i.VisitorID,
 			&i.Ip,
 			&i.UserAgent,
 			&i.CreatedOn,
@@ -55,13 +56,14 @@ func (q *Queries) RemoveLinkVisits(ctx context.Context, dollar_1 []pgtype.UUID) 
 }
 
 const saveLinkVisit = `-- name: SaveLinkVisit :exec
-INSERT INTO link_visit (id, link_id, ip, user_agent, created_on)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO link_visit (id, link_id, visitor_id, ip, user_agent, created_on)
+VALUES ($1, $2, $3, $4, $5, $6)
 `
 
 type SaveLinkVisitParams struct {
 	ID        pgtype.UUID
 	LinkID    pgtype.UUID
+	VisitorID pgtype.UUID
 	Ip        *netip.Addr
 	UserAgent pgtype.Text
 	CreatedOn pgtype.Timestamptz
@@ -71,6 +73,7 @@ func (q *Queries) SaveLinkVisit(ctx context.Context, arg SaveLinkVisitParams) er
 	_, err := q.db.Exec(ctx, saveLinkVisit,
 		arg.ID,
 		arg.LinkID,
+		arg.VisitorID,
 		arg.Ip,
 		arg.UserAgent,
 		arg.CreatedOn,
