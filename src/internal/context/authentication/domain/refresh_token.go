@@ -59,7 +59,7 @@ func RefreshTokenFromPrimitives(
 	if err != nil {
 		return nil, err
 	}
-	
+
 	userIdVO, err := shared_domain.ParseID(userId)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func RefreshTokenFromPrimitives(
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &RefreshToken{
 		Id:        tokenId,
 		UserId:    userIdVO,

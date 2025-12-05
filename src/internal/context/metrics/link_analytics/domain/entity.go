@@ -31,7 +31,7 @@ func NewLinkAnalytics(linkID string) (*LinkAnalytics, error) {
 		TotalViews:                shared_domain.NewLinkViewsCounter(0),
 		UniqueViews:               shared_domain.NewLinkViewsCounter(0),
 		LinkCountriesViewCounters: []link_country_view_counter_domain.LinkCountryViewCounter{},
-		UpdateOn: shared_domain_context.NewUpdatedOn(),
+		UpdateOn:                  shared_domain_context.NewUpdatedOn(),
 	}
 	return linkAnalytics, nil
 }

@@ -27,12 +27,12 @@ func NewUser(
 	if err != nil {
 		return nil, err
 	}
-	
+
 	oauthSubjectVO, err := NewOAuthSubject(oauthSubject)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	user := &User{
 		Id:            id,
 		Email:         emailVO,
@@ -40,8 +40,8 @@ func NewUser(
 		OAuthSubject:  oauthSubjectVO,
 		CreatedOn:     shared_domain.NewCreatedOn(),
 	}
-	
+
 	user.Record(NewUserCreatedEvent(id.String(), email, oauthProvider.String()))
-	
+
 	return user, nil
 }

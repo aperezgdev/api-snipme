@@ -45,7 +45,7 @@ func (r *SqlcShortLinkRepository) Save(ctx context.Context, shortLink *domain.Sh
 
 	err := r.queries.SaveShortLink(ctx, generated.SaveShortLinkParams{
 		ID:            id,
-		Summary:			 summary,
+		Summary:       summary,
 		OriginalRoute: string(shortLink.OriginalRoute),
 		ClientID:      clientID,
 		Code:          string(shortLink.Code),
@@ -79,7 +79,7 @@ func (r *SqlcShortLinkRepository) FindById(ctx context.Context, id shared_domain
 	clientID, _ := shared_domain_context.ParseID(shortLink.ClientID.String())
 	result := &domain.ShortLink{
 		Id:            id,
-		Summary: 			 domain.ShortLinkSummary(shortLink.Summary.String),
+		Summary:       domain.ShortLinkSummary(shortLink.Summary.String),
 		OriginalRoute: domain.ShortLinkOriginalRoute(shortLink.OriginalRoute),
 		Code:          domain.ShortLinkCode(shortLink.Code),
 		Client:        clientID,
@@ -120,7 +120,7 @@ func (r *SqlcShortLinkRepository) FindByCode(ctx context.Context, code domain.Sh
 	clientID, _ := shared_domain_context.ParseID(shortLink.ClientID.String())
 	result := &domain.ShortLink{
 		Id:            id,
-		Summary: 			 domain.ShortLinkSummary(shortLink.Summary.String),
+		Summary:       domain.ShortLinkSummary(shortLink.Summary.String),
 		OriginalRoute: domain.ShortLinkOriginalRoute(shortLink.OriginalRoute),
 		Code:          domain.ShortLinkCode(shortLink.Code),
 		Client:        clientID,
@@ -141,12 +141,12 @@ func (r *SqlcShortLinkRepository) FindByClient(ctx context.Context, clientId sha
 		return nil, err
 	}
 
-	results := pkg.Map(shortLinks, func (sl generated.ShortLink) *domain.ShortLink {
+	results := pkg.Map(shortLinks, func(sl generated.ShortLink) *domain.ShortLink {
 		id, _ := shared_domain_context.ParseID(sl.ID.String())
 		clientID, _ := shared_domain_context.ParseID(sl.ClientID.String())
 		return &domain.ShortLink{
 			Id:            id,
-			Summary: 			 domain.ShortLinkSummary(sl.Summary.String),
+			Summary:       domain.ShortLinkSummary(sl.Summary.String),
 			OriginalRoute: domain.ShortLinkOriginalRoute(sl.OriginalRoute),
 			Code:          domain.ShortLinkCode(sl.Code),
 			Client:        clientID,

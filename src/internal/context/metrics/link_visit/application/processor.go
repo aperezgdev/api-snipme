@@ -9,9 +9,9 @@ import (
 )
 
 type LinkVisitProcessor struct {
-	logger  shared_domain_context.Logger
-	finder  domain.LinkVisitOldsFinder
-	remover domain.LinkVisitBatchRemover
+	logger   shared_domain_context.Logger
+	finder   domain.LinkVisitOldsFinder
+	remover  domain.LinkVisitBatchRemover
 	eventBus shared_domain_context.EventBus
 }
 
@@ -21,9 +21,9 @@ func NewLinkVisitProcessor(
 	eventBus shared_domain_context.EventBus,
 ) *LinkVisitProcessor {
 	return &LinkVisitProcessor{
-		logger:  logger,
-		finder:  *domain.NewLinkVisitOldsFinder(logger, repo),
-		remover: *domain.NewLinkVisitBatchRemover(logger, repo),
+		logger:   logger,
+		finder:   *domain.NewLinkVisitOldsFinder(logger, repo),
+		remover:  *domain.NewLinkVisitBatchRemover(logger, repo),
 		eventBus: eventBus,
 	}
 }
@@ -50,8 +50,8 @@ func (p *LinkVisitProcessor) Run(ctx context.Context) error {
 
 	p.logger.Info(ctx, "LinkVisitProcessor - Run - Found old link visits to process", shared_domain_context.NewField("count", len(linkVisits)))
 	linkVisitsIds := pkg.Map(linkVisits, func(lv domain.LinkVisit) shared_domain_context.Id {
-    return lv.Id
-})
+		return lv.Id
+	})
 
 	err = p.remover.Run(ctx, linkVisitsIds)
 	if err != nil {
@@ -64,22 +64,21 @@ func (p *LinkVisitProcessor) Run(ctx context.Context) error {
 	return nil
 }
 
-
-func (p *LinkVisitProcessor) calculateVisits(ctx context.Context, linkVisitGrouped map[shared_domain_context.Id][]domain.LinkVisit) []shared_domain_context.DomainEvent{
+func (p *LinkVisitProcessor) calculateVisits(ctx context.Context, linkVisitGrouped map[shared_domain_context.Id][]domain.LinkVisit) []shared_domain_context.DomainEvent {
 	var events []shared_domain_context.DomainEvent
 	for linkId, visits := range linkVisitGrouped {
 		totalViews := uint(len(visits))
 
 		uniqueIPs := make(map[string]bool)
 		for _, visit := range visits {
-				uniqueIPs[visit.Ip.String()] = true
+			uniqueIPs[visit.Ip.String()] = true
 		}
 		uniqueViews := uint(len(uniqueIPs))
 
 		events = append(events, domain.NewLinkVisitsProcessedDomainEvent(
-				linkId.String(),
-				totalViews,
-				uniqueViews,
+			linkId.String(),
+			totalViews,
+			uniqueViews,
 		))
 
 		p.logger.Info(

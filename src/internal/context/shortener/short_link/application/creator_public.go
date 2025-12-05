@@ -8,15 +8,15 @@ import (
 )
 
 type PublicShortLinkCreator struct {
-	logger shared_domain_context.Logger
-	repo  domain.ShortLinkRepository
+	logger   shared_domain_context.Logger
+	repo     domain.ShortLinkRepository
 	eventBus shared_domain_context.EventBus
 }
 
 func NewPublicShortLinkCreator(logger shared_domain_context.Logger, repo domain.ShortLinkRepository, eventBus shared_domain_context.EventBus) *PublicShortLinkCreator {
 	return &PublicShortLinkCreator{
-		logger: logger,
-		repo:  repo,
+		logger:   logger,
+		repo:     repo,
 		eventBus: eventBus,
 	}
 }

@@ -13,7 +13,7 @@ import (
 )
 
 type SqlcRefreshTokenRepository struct {
-	logger shared_domain.Logger
+	logger  shared_domain.Logger
 	queries *generated.Queries
 }
 

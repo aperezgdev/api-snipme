@@ -62,7 +62,7 @@ func TestAuthenticationMiddleware(t *testing.T) {
 		nextHandler := &mockRoute{
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				handlerCalled = true
-				
+
 				authenticatedUser, ok := GetAuthenticatedUser(r.Context())
 				if !ok {
 					t.Error("Expected authenticated user in context")
@@ -70,7 +70,7 @@ func TestAuthenticationMiddleware(t *testing.T) {
 				if authenticatedUser.Email != "test@example.com" {
 					t.Errorf("Expected email test@example.com, got %s", authenticatedUser.Email)
 				}
-				
+
 				w.WriteHeader(http.StatusOK)
 			},
 			route:  "/test",

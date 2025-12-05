@@ -16,7 +16,7 @@ type PostShortLinkHTTPHandler struct {
 
 type postShortLinkHttpRequest struct {
 	OriginalURL string `json:"original_url"`
-	Summary 	 	string `json:"summary"`
+	Summary     string `json:"summary"`
 	ClientID    string `json:"client_id"`
 }
 

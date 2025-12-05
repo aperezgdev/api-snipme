@@ -24,12 +24,12 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		linkId := "00000000-0000-0000-0000-000000000001"
 		domainId, _ := shared_domain_context.ParseID(linkId)
-		
+
 		existingLinkAnalytics := &domain.LinkAnalytics{
-				Id:          domainId,
-				LinkId:      domainId,
-				TotalViews:  shared_domain.NewLinkViewsCounter(10),
-				UniqueViews: shared_domain.NewLinkViewsCounter(5),
+			Id:          domainId,
+			LinkId:      domainId,
+			TotalViews:  shared_domain.NewLinkViewsCounter(10),
+			UniqueViews: shared_domain.NewLinkViewsCounter(5),
 		}
 
 		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2)
@@ -39,13 +39,13 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		err := updater.On(context.Background(), event)
 		if err != nil {
-				t.Fatalf("Expected no error, got %v", err)
+			t.Fatalf("Expected no error, got %v", err)
 		}
 
 		repo.AssertExpectations(t)
-		
+
 		repo.AssertCalled(t, "Update", mock.Anything, mock.MatchedBy(func(la domain.LinkAnalytics) bool {
-				return uint(la.TotalViews) == 13 && uint(la.UniqueViews) == 7
+			return uint(la.TotalViews) == 13 && uint(la.UniqueViews) == 7
 		}))
 	})
 
@@ -63,7 +63,7 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		err := updater.On(context.Background(), event)
 		if err == nil {
-				t.Fatalf("Expected error, got nil")
+			t.Fatalf("Expected error, got nil")
 		}
 
 		repo.AssertExpectations(t)
@@ -77,12 +77,12 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		linkId := "00000000-0000-0000-0000-000000000003"
 		domainId, _ := shared_domain_context.ParseID(linkId)
-		
+
 		existingLinkAnalytics := &domain.LinkAnalytics{
-				Id:          domainId,
-				LinkId:      domainId,
-				TotalViews:  shared_domain.NewLinkViewsCounter(10),
-				UniqueViews: shared_domain.NewLinkViewsCounter(5),
+			Id:          domainId,
+			LinkId:      domainId,
+			TotalViews:  shared_domain.NewLinkViewsCounter(10),
+			UniqueViews: shared_domain.NewLinkViewsCounter(5),
 		}
 
 		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2)
@@ -92,7 +92,7 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		err := updater.On(context.Background(), event)
 		if err == nil {
-				t.Fatalf("Expected error, got nil")
+			t.Fatalf("Expected error, got nil")
 		}
 
 		repo.AssertExpectations(t)
@@ -107,7 +107,7 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 
 		err := updater.On(context.Background(), invalidEvent)
 		if err != nil {
-				t.Fatalf("Expected no error for invalid event type, got %v", err)
+			t.Fatalf("Expected no error for invalid event type, got %v", err)
 		}
 
 		repo.AssertNotCalled(t, "FindByLinkId")

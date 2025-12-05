@@ -49,7 +49,7 @@ func (h *PostRefreshTokenHandler) Handler(w http.ResponseWriter, req *http.Reque
 	if err != nil {
 		var validationErr shared_domain.ValidationError
 		var notFoundErr shared_domain.NotFoundError
-		
+
 		if errors.As(err, &validationErr) || errors.As(err, &notFoundErr) {
 			w.WriteHeader(http.StatusUnauthorized)
 			h.logger.Error(req.Context(), "PostRefreshTokenHandler - Handler - Invalid or expired refresh token", shared_domain.NewField("error", err))

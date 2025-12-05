@@ -45,7 +45,7 @@ func TestPostPublicShortLink(t *testing.T) {
 			t.Fatalf("Error making request: %v", err)
 		}
 		defer resp.Body.Close()
-		
+
 		if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
 			t.Fatalf("Expected status code 201 or 200, got %d", resp.StatusCode)
 		}

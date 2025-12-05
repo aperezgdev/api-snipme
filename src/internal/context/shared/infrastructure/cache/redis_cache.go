@@ -17,7 +17,7 @@ type Cache interface {
 
 type RedisCache struct {
 	client *redis.Client
-	logger  shared_domain_context.Logger
+	logger shared_domain_context.Logger
 }
 
 func NewRedisCache(logger shared_domain_context.Logger, client *redis.Client) *RedisCache {

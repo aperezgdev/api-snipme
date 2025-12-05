@@ -17,7 +17,7 @@ type SqlcLinkAnalyticsRepository struct {
 	queries *generated.Queries
 }
 
-func NewSqlcLinkAnalyticsRepository(logger shared_domain_context.Logger, q *generated.Queries,) *SqlcLinkAnalyticsRepository {
+func NewSqlcLinkAnalyticsRepository(logger shared_domain_context.Logger, q *generated.Queries) *SqlcLinkAnalyticsRepository {
 	return &SqlcLinkAnalyticsRepository{queries: q, logger: logger}
 }
 
@@ -54,7 +54,7 @@ func (r *SqlcLinkAnalyticsRepository) FindByLinkId(ctx context.Context, linkId s
 	id := pgtype.UUID{}
 	_ = id.Scan(linkId.String())
 
-	rows,  err := r.queries.FindByLinkID(ctx, id)
+	rows, err := r.queries.FindByLinkID(ctx, id)
 	if rows == nil || len(rows) == 0 {
 		r.logger.Info(ctx, "SqlcLinkAnalyticsRepository - FindByLinkId - LinkAnalytics not found", shared_domain_context.NewField("linkId", linkId.String()))
 		return pkg.EmptyOptional[*link_analytics_domain.LinkAnalytics](), nil
@@ -64,15 +64,15 @@ func (r *SqlcLinkAnalyticsRepository) FindByLinkId(ctx context.Context, linkId s
 		r.logger.Error(ctx, "SqlcLinkAnalyticsRepository - FindByLinkId - Error at finding", shared_domain_context.NewField("error", err.Error()))
 		return pkg.EmptyOptional[*link_analytics_domain.LinkAnalytics](), err
 	}
-	
+
 	row := rows[0]
 
 	linkAnalytics := link_analytics_domain.LinkAnalytics{
-		Id:         shared_domain_context.Id(row.ID.Bytes),
-		LinkId:     shared_domain_context.Id(row.LinkID.Bytes),
-		TotalViews: shared_domain.LinkViewsCounter(row.TotalViews.Int32),
+		Id:          shared_domain_context.Id(row.ID.Bytes),
+		LinkId:      shared_domain_context.Id(row.LinkID.Bytes),
+		TotalViews:  shared_domain.LinkViewsCounter(row.TotalViews.Int32),
 		UniqueViews: shared_domain.LinkViewsCounter(row.UniqueVisitors.Int32),
-		UpdateOn:   shared_domain_context.UpdatedOn(row.CreatedOn.Time),
+		UpdateOn:    shared_domain_context.UpdatedOn(row.CreatedOn.Time),
 	}
 
 	r.logger.Info(ctx, "SqlcLinkAnalyticsRepository - FindByLinkId - Find successfully", shared_domain_context.NewField("linkId", linkId.String()))

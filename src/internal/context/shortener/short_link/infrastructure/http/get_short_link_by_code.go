@@ -67,12 +67,12 @@ func (h *GetShortLinkByCodeHTTPHandler) Handler(w http.ResponseWriter, req *http
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name:  "visitor_id",
-			Value: visitorIdVO.String(),
-			Path: "/",
+			Name:     "visitor_id",
+			Value:    visitorIdVO.String(),
+			Path:     "/",
 			HttpOnly: true,
-			Secure: true,
-			MaxAge: int(time.Hour) * 24,
+			Secure:   true,
+			MaxAge:   int(time.Hour) * 24,
 		})
 	}
 

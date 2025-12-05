@@ -46,7 +46,7 @@ func (h *GetOAuthLoginHandler) Handler(w http.ResponseWriter, req *http.Request)
 	mac := hmac.New(sha256.New, []byte(h.stateSecret))
 	mac.Write([]byte(state))
 	signature := base64.URLEncoding.EncodeToString(mac.Sum(nil))
-	
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "oauth_state",
 		Value:    state + "." + signature,
@@ -59,9 +59,9 @@ func (h *GetOAuthLoginHandler) Handler(w http.ResponseWriter, req *http.Request)
 	h.logger.Info(req.Context(), "GetOAuthLoginHandler - Handler - Set cookie")
 
 	authURL := h.oauthClient.GetAuthURL(state)
-	
+
 	h.logger.Info(req.Context(), "GetOAuthLoginHandler - Handler - Redirecting to OAuth provider")
-	
+
 	http.Redirect(w, req, authURL, http.StatusTemporaryRedirect)
 }
 

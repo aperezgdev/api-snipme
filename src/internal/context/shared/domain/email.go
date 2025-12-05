@@ -2,7 +2,6 @@ package domain
 
 import "net/mail"
 
-
 type Email string
 
 func NewEmail(email string) (Email, error) {

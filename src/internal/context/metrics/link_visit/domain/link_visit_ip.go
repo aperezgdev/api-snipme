@@ -9,7 +9,7 @@ func NewLinkVisitIP(ip string) (LinkVisitIP, error) {
 	if err == nil {
 		return LinkVisitIP(netipAddrPort.Addr()), nil
 	}
-	
+
 	netipAddr, err := netip.ParseAddr(ip)
 	if err != nil {
 		return LinkVisitIP{}, err

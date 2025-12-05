@@ -15,7 +15,7 @@ const (
 
 func NewOAuthProvider(provider string) (OAuthProvider, error) {
 	normalized := OAuthProvider(strings.ToLower(provider))
-	
+
 	switch normalized {
 	case OAuthProviderGoogle, OAuthProviderGitHub:
 		return normalized, nil

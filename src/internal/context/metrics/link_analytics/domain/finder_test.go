@@ -20,18 +20,18 @@ func TestLinkAnalyticsFinder(t *testing.T) {
 		domainId, _ := shared_domain_context.ParseID(linkId)
 
 		linkAnalytics := &LinkAnalytics{
-				Id:     domainId,
-				LinkId: domainId,
+			Id:     domainId,
+			LinkId: domainId,
 		}
 
 		repo.On("FindByLinkId", mock.Anything, domainId).Return(pkg.Some(linkAnalytics), nil)
 
 		foundLinkAnalytics, err := finder.Run(context.Background(), linkId)
 		if err != nil {
-				t.Fatalf("Expected no error, got %v", err)
+			t.Fatalf("Expected no error, got %v", err)
 		}
 		if foundLinkAnalytics.LinkId != linkAnalytics.LinkId {
-				t.Fatalf("Expected link ID %v, got %v", linkAnalytics.LinkId, foundLinkAnalytics.LinkId)
+			t.Fatalf("Expected link ID %v, got %v", linkAnalytics.LinkId, foundLinkAnalytics.LinkId)
 		}
 
 		repo.AssertExpectations(t)
@@ -48,7 +48,7 @@ func TestLinkAnalyticsFinder(t *testing.T) {
 
 		_, err := finder.Run(context.Background(), linkId)
 		if err == nil {
-				t.Fatalf("Expected error, got nil")
+			t.Fatalf("Expected error, got nil")
 		}
 
 		repo.AssertExpectations(t)
@@ -62,7 +62,7 @@ func TestLinkAnalyticsFinder(t *testing.T) {
 
 		_, err := finder.Run(context.Background(), invalidLinkId)
 		if err == nil {
-				t.Fatalf("Expected error for invalid UUID, got nil")
+			t.Fatalf("Expected error for invalid UUID, got nil")
 		}
 
 		repo.AssertNotCalled(t, "FindByLinkId")

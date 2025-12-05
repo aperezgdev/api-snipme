@@ -23,8 +23,8 @@ func NewCreatorOnUserCreated(logger domain_shared.Logger, repo domain.ClientRepo
 func (c CreatorOnUserCreated) On(ctx context.Context, event domain_shared.DomainEvent) error {
 	userCreatedEvent, ok := event.(auth_domain.UserCreated)
 	if !ok {
-		c.logger.Error(ctx, "CreatorOnUserCreated - On - Invalid event type", 
-			domain_shared.NewField("expected", auth_domain.UserCreatedEventName), 
+		c.logger.Error(ctx, "CreatorOnUserCreated - On - Invalid event type",
+			domain_shared.NewField("expected", auth_domain.UserCreatedEventName),
 			domain_shared.NewField("received", event.Name()))
 		return nil
 	}

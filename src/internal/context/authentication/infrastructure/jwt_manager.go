@@ -16,13 +16,13 @@ type JWTClaims struct {
 }
 
 type JWTManager struct {
-	secret           []byte
+	secret            []byte
 	expirationMinutes int
 }
 
 func NewJWTManager(secret string, expirationMinutes int) *JWTManager {
 	return &JWTManager{
-		secret:           []byte(secret),
+		secret:            []byte(secret),
 		expirationMinutes: expirationMinutes,
 	}
 }

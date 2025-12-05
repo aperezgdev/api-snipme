@@ -8,8 +8,8 @@ const UserCreatedEventName = "UserCreated"
 
 type UserCreated struct {
 	shared_domain.DomainEventBase
-	name 				 string
-	email				 string
+	name  string
+	email string
 }
 
 func NewUserCreatedEvent(userId, email, name string) shared_domain.DomainEvent {

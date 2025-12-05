@@ -7,19 +7,18 @@ import (
 )
 
 type UserEmailUpdater struct {
-	logger shared_domain_context.Logger
-	userRepo UserRepository
+	logger     shared_domain_context.Logger
+	userRepo   UserRepository
 	finderById UserFinder
 }
-
 
 func NewUserEmailUpdater(
 	logger shared_domain_context.Logger,
 	userRepo UserRepository,
 ) *UserEmailUpdater {
 	return &UserEmailUpdater{
-		logger: logger,
-		userRepo: userRepo,
+		logger:     logger,
+		userRepo:   userRepo,
 		finderById: *NewUserFinder(logger, userRepo),
 	}
 }

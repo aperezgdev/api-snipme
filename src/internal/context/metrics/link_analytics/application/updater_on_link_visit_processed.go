@@ -11,7 +11,7 @@ import (
 type UpdaterOnLinkVisitProcessed struct {
 	logger shared_domain_context.Logger
 	finder domain.LinkAnalyticsFinder
-	repo domain.LinkAnalyticsRepository
+	repo   domain.LinkAnalyticsRepository
 }
 
 func NewUpdaterOnLinkVisitProcessed(
@@ -21,7 +21,7 @@ func NewUpdaterOnLinkVisitProcessed(
 	return &UpdaterOnLinkVisitProcessed{
 		logger: logger,
 		finder: *domain.NewLinkAnalyticsFinder(logger, repo),
-		repo: repo,
+		repo:   repo,
 	}
 }
 

@@ -55,8 +55,6 @@ func TestCreatorOnUserCreated_On(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-
-
 	t.Run("On handles invalid client data from event", func(t *testing.T) {
 		t.Parallel()
 		repo := &domain.ClientRepositoryMock{}

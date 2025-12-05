@@ -14,7 +14,7 @@ type postPublicShortLinkRequest struct {
 }
 
 type PostPublicShortLinkHTTPHandler struct {
-	logger shared_domain_context.Logger
+	logger  shared_domain_context.Logger
 	creator application.PublicShortLinkCreator
 }
 
@@ -23,7 +23,7 @@ func NewPostPublicShortLinkHTTPHandler(
 	creator application.PublicShortLinkCreator,
 ) *PostPublicShortLinkHTTPHandler {
 	return &PostPublicShortLinkHTTPHandler{
-		logger: logger,
+		logger:  logger,
 		creator: creator,
 	}
 }
@@ -53,7 +53,7 @@ func (h *PostPublicShortLinkHTTPHandler) Handler(w http.ResponseWriter, req *htt
 		w.Write([]byte(err.Error()))
 		return
 	}
-	
+
 	if err != nil {
 		h.logger.Error(req.Context(), "PostPublicShortLinkHTTPHandler - Handler - Error creating public short link", shared_domain_context.NewField("error", err))
 		w.WriteHeader(http.StatusInternalServerError)

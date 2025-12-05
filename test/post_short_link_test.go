@@ -26,7 +26,7 @@ func TestPostShortLinkTest(t *testing.T) {
 		body := postShortLinkRequest{
 			OriginalURL: "https://example.com",
 			ClientID:    "11111111-1111-1111-1111-111111111111",
-			Summary:			"Example Link",
+			Summary:     "Example Link",
 		}
 		b, _ := json.Marshal(body)
 		req := &http.Request{

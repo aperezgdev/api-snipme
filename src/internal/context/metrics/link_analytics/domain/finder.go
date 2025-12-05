@@ -8,7 +8,7 @@ import (
 
 type LinkAnalyticsFinder struct {
 	logger shared_domain_context.Logger
-	repo LinkAnalyticsRepository
+	repo   LinkAnalyticsRepository
 }
 
 func NewLinkAnalyticsFinder(
@@ -17,10 +17,9 @@ func NewLinkAnalyticsFinder(
 ) *LinkAnalyticsFinder {
 	return &LinkAnalyticsFinder{
 		logger: logger,
-		repo: repo,
+		repo:   repo,
 	}
 }
-
 
 func (f *LinkAnalyticsFinder) Run(ctx context.Context, linkId string) (*LinkAnalytics, error) {
 	f.logger.Info(ctx, "LinkAnalyticsFinder - Run - Finding LinkAnalytics", shared_domain_context.NewField("linkId", linkId))
@@ -28,7 +27,7 @@ func (f *LinkAnalyticsFinder) Run(ctx context.Context, linkId string) (*LinkAnal
 	idVo, err := shared_domain_context.ParseID(linkId)
 	if err != nil {
 		f.logger.Error(ctx, "LinkAnalyticsFinder - Run - Error parsing linkId", shared_domain_context.NewField("error", err.Error()))
-		return &LinkAnalytics{}, shared_domain_context.NewValidationError("linkId","invalid linkId format")
+		return &LinkAnalytics{}, shared_domain_context.NewValidationError("linkId", "invalid linkId format")
 	}
 
 	linkAnalytics, err := f.repo.FindByLinkId(ctx, idVo)

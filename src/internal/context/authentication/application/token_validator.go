@@ -8,9 +8,9 @@ import (
 )
 
 type TokenValidator struct {
-	logger     shared_domain.Logger
+	logger       shared_domain.Logger
 	tokenManager domain.TokenManager
-	userRepo   domain.UserRepository
+	userRepo     domain.UserRepository
 }
 
 func NewTokenValidator(
@@ -19,9 +19,9 @@ func NewTokenValidator(
 	userRepo domain.UserRepository,
 ) *TokenValidator {
 	return &TokenValidator{
-		logger:     logger,
+		logger:       logger,
 		tokenManager: tokenManager,
-		userRepo:   userRepo,
+		userRepo:     userRepo,
 	}
 }
 

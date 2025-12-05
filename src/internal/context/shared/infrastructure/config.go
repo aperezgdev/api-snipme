@@ -54,8 +54,8 @@ type OAuthConfig struct {
 }
 
 type JWTConfig struct {
-	Secret             string
-	ExpirationMinutes  int
+	Secret              string
+	ExpirationMinutes   int
 	RefreshTokenTTLDays int
 }
 

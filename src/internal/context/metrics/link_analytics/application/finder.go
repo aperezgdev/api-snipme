@@ -9,7 +9,7 @@ import (
 
 type LinkAnalyticsFinder struct {
 	logger shared_domain_context.Logger
-	finder   domain.LinkAnalyticsFinder
+	finder domain.LinkAnalyticsFinder
 }
 
 func NewLinkAnalyticsFinder(

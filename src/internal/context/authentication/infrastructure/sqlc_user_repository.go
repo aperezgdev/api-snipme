@@ -13,7 +13,7 @@ import (
 )
 
 type SqlcUserRepository struct {
-	logger shared_domain.Logger
+	logger  shared_domain.Logger
 	queries *generated.Queries
 }
 
@@ -56,7 +56,7 @@ func (r *SqlcUserRepository) FindById(ctx context.Context, id shared_domain.Id) 
 			r.logger.Info(ctx, "SqlcUserRepository - FindById - User not found", shared_domain.NewField("userId", id.String()))
 			return pkg.EmptyOptional[*domain.User](), nil
 		}
-		
+
 		r.logger.Error(ctx, "SqlcUserRepository - FindById - Error finding user", shared_domain.NewField("error", err.Error()))
 		return pkg.EmptyOptional[*domain.User](), err
 	}
@@ -129,10 +129,10 @@ func (r *SqlcUserRepository) Update(ctx context.Context, user *domain.User) erro
 
 func (r *SqlcUserRepository) toDomain(user generated.User) *domain.User {
 	return &domain.User{
-		Id:            	user.ID.Bytes,
-		Email:          shared_domain.Email(user.Email),
-		OAuthProvider:  domain.OAuthProvider(user.OauthProvider),
-		OAuthSubject:  	domain.OAuthSubject(user.OauthSubject),
-		CreatedOn:			shared_domain.CreatedOn(user.CreatedOn.Time),
+		Id:            user.ID.Bytes,
+		Email:         shared_domain.Email(user.Email),
+		OAuthProvider: domain.OAuthProvider(user.OauthProvider),
+		OAuthSubject:  domain.OAuthSubject(user.OauthSubject),
+		CreatedOn:     shared_domain.CreatedOn(user.CreatedOn.Time),
 	}
 }

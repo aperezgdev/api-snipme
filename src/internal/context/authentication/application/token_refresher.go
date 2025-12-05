@@ -13,10 +13,10 @@ type RefreshTokenResult struct {
 }
 
 type TokenRefresher struct {
-	logger           shared_domain.Logger
-	refreshTokenRepo domain.RefreshTokenRepository
-	userRepo         domain.UserRepository
-	tokenManager     domain.TokenManager
+	logger                    shared_domain.Logger
+	refreshTokenRepo          domain.RefreshTokenRepository
+	userRepo                  domain.UserRepository
+	tokenManager              domain.TokenManager
 	jwtTokenExpirationMinutes int
 }
 
@@ -28,10 +28,10 @@ func NewTokenRefresher(
 	jwtTokenExpirationMinutes int,
 ) *TokenRefresher {
 	return &TokenRefresher{
-		logger:           logger,
-		refreshTokenRepo: refreshTokenRepo,
-		userRepo:         userRepo,
-		tokenManager:     tokenManager,
+		logger:                    logger,
+		refreshTokenRepo:          refreshTokenRepo,
+		userRepo:                  userRepo,
+		tokenManager:              tokenManager,
 		jwtTokenExpirationMinutes: jwtTokenExpirationMinutes,
 	}
 }

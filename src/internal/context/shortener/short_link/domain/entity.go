@@ -5,7 +5,7 @@ import shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shar
 type ShortLink struct {
 	shared_domain.AggregateRoot
 	Id            shared_domain.Id
-	Summary 		 		ShortLinkSummary
+	Summary       ShortLinkSummary
 	OriginalRoute ShortLinkOriginalRoute
 	Code          ShortLinkCode
 	Client        shared_domain.Id

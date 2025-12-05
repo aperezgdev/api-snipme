@@ -109,7 +109,7 @@ func (c *GitHubOAuthClient) ExchangeCode(ctx context.Context, code string) (*oau
 
 func (c *GitHubOAuthClient) GetUserInfo(ctx context.Context, token *oauth2.Token) (*OAuthUserInfo, error) {
 	client := c.config.Client(ctx, token)
-	
+
 	resp, err := client.Get("https://api.github.com/user")
 	if err != nil {
 		return nil, err

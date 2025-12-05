@@ -18,13 +18,13 @@ type AuthenticationResult struct {
 }
 
 type Authenticator struct {
-	logger              shared_domain.Logger
-	userRepo            domain.UserRepository
-	refreshTokenRepo    domain.RefreshTokenRepository
-	tokenManager        domain.TokenManager
-	eventBus            shared_domain.EventBus
-	userEmailUpdater    domain.UserEmailUpdater
-	refreshTokenTTLDays int
+	logger                shared_domain.Logger
+	userRepo              domain.UserRepository
+	refreshTokenRepo      domain.RefreshTokenRepository
+	tokenManager          domain.TokenManager
+	eventBus              shared_domain.EventBus
+	userEmailUpdater      domain.UserEmailUpdater
+	refreshTokenTTLDays   int
 	jwtExpirantionMinutes int
 }
 
@@ -38,13 +38,13 @@ func NewAuthenticator(
 	jwtExpirantionMinutes int,
 ) *Authenticator {
 	return &Authenticator{
-		logger:              logger,
-		userRepo:            userRepo,
-		refreshTokenRepo:    refreshTokenRepo,
-		tokenManager:        tokenManager,
-		eventBus:            eventBus,
-		userEmailUpdater:    *domain.NewUserEmailUpdater(logger, userRepo),
-		refreshTokenTTLDays: refreshTokenTTLDays,
+		logger:                logger,
+		userRepo:              userRepo,
+		refreshTokenRepo:      refreshTokenRepo,
+		tokenManager:          tokenManager,
+		eventBus:              eventBus,
+		userEmailUpdater:      *domain.NewUserEmailUpdater(logger, userRepo),
+		refreshTokenTTLDays:   refreshTokenTTLDays,
 		jwtExpirantionMinutes: jwtExpirantionMinutes,
 	}
 }
@@ -68,10 +68,10 @@ func (a *Authenticator) Run(
 	if userOpt.IsPresent() {
 		a.logger.Info(ctx, "Authenticator - Run - User found, proceeding to authenticate", shared_domain.Field{Key: "user_id", Value: userOpt.Get().Id.String()})
 		user = userOpt.Get()
-		
+
 		if string(user.Email) != email {
 			a.logger.Info(ctx, "Authenticator - Run - User email has changed, updating email", shared_domain.Field{Key: "user_id", Value: user.Id.String()}, shared_domain.Field{Key: "old_email", Value: user.Email}, shared_domain.Field{Key: "new_email", Value: email})
-			
+
 			if err := a.userEmailUpdater.Run(ctx, user.Id.String(), email); err != nil {
 				a.logger.Error(ctx, "Authenticator - Run - Failed to update user email", shared_domain.Field{Key: "error", Value: err.Error()})
 				return nil, err
