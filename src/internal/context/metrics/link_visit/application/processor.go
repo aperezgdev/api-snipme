@@ -69,16 +69,38 @@ func (p *LinkVisitProcessor) calculateVisits(ctx context.Context, linkVisitGroup
 	for linkId, visits := range linkVisitGrouped {
 		totalViews := uint(len(visits))
 
-		uniqueIPs := make(map[string]bool)
-		for _, visit := range visits {
-			uniqueIPs[visit.Ip.String()] = true
+		uniqueVisitors := make(map[string]struct{})
+		type ipStats struct {
+			total    uint
+			visitors map[string]struct{}
 		}
-		uniqueViews := uint(len(uniqueIPs))
+		ipsStats := make(map[string]*ipStats)
+
+		for _, visit := range visits {
+			uniqueVisitors[visit.VisitorId.String()] = struct{}{}
+			ipStr := visit.Ip.String()
+			if ipsStats[ipStr] == nil {
+				ipsStats[ipStr] = &ipStats{visitors: make(map[string]struct{})}
+			}
+			ipsStats[ipStr].total++
+			ipsStats[ipStr].visitors[visit.VisitorId.String()] = struct{}{}
+		}
+		uniqueViews := uint(len(uniqueVisitors))
+
+		var ipsFrequency []domain.IpsVisits
+		for ip, stats := range ipsStats {
+			ipsFrequency = append(ipsFrequency, domain.IpsVisits{
+				Ip:          ip,
+				TotalViews:  stats.total,
+				UniqueViews: uint(len(stats.visitors)),
+			})
+		}
 
 		events = append(events, domain.NewLinkVisitsProcessedDomainEvent(
 			linkId.String(),
 			totalViews,
 			uniqueViews,
+			ipsFrequency,
 		))
 
 		p.logger.Info(

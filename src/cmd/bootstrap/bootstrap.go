@@ -10,6 +10,7 @@ import (
 	auth_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
 	auth_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
 	auth_http "github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure/http"
+	geo_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/geo/infrastructure"
 	link_analytics_application "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/application"
 	link_analytics_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/infrastructure"
 	link_analytics_http "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/infrastructure/http"
@@ -25,7 +26,11 @@ import (
 	client_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/shortener/client/infrastructure"
 	short_link_application "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/application"
 	short_link_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure"
+	"github.com/oschwald/maxminddb-golang/v2"
 	"github.com/robfig/cron/v3"
+
+	link_country_view_counter "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_country_view_counter/application"
+	link_country_view_counter_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_country_view_counter/infrastructure"
 
 	link_visit_domain "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/domain"
 	short_link_cache "github.com/aperezgdev/api-snipme/src/internal/context/shortener/short_link/infrastructure/cache"
@@ -67,6 +72,12 @@ func Run() error {
 	})
 	defer redisClient.Close()
 
+	db, err := maxminddb.Open(conf.GEOFilePath)
+	if err != nil {
+		logger.Error(ctx, "Error opening MaxMind DB", shared_domain_context.NewField("error", err))
+	}
+	defer db.Close()
+
 	cache := shared_cache.NewRedisCache(logger, redisClient)
 	shortLinkRepository := short_link_cache.NewRedisShortLinkRepository(
 		short_link_infrastructure.NewSqlcShortLinkRepository(logger, queries),
@@ -78,9 +89,10 @@ func Run() error {
 	clientRepo := client_infrastructure.NewSqlcClientRepository(logger, queries)
 	linkVisitRepository := link_visit_infrastructure.NewSqlcLinkVisitRepository(logger, queries)
 	linkAnalytics := link_analytics_infrastructure.NewSqlcLinkAnalyticsRepository(logger, queries)
-
 	userRepository := auth_infrastructure.NewSqlcUserRepository(logger, queries)
 	refreshTokenRepository := auth_infrastructure.NewSqlcRefreshTokenRepository(logger, queries)
+	linkCountryViewCounterRepository := link_country_view_counter_infrastructure.NewSqlcLinkCountryViewCounterRepository(logger, queries)
+	geoRepository := geo_infrastructure.NewMMDBRepository(logger, *db)
 
 	jwtManager := auth_infrastructure.NewJWTManager(conf.JWT.Secret, conf.JWT.ExpirationMinutes)
 
@@ -132,15 +144,17 @@ func Run() error {
 	githubCallbackHandler := auth_http.NewGetOAuthCallbackHandler(logger, githubOAuthClient, authenticator, auth_domain.OAuthProviderGitHub, conf.OAuth.StateSecret)
 	refreshTokenHandler := auth_http.NewPostRefreshTokenHandler(logger, tokenRefresher)
 
+	incrementerOnLinkVisitProcessed := link_country_view_counter.NewIncremeterOnLinkVisitProcessed(logger, geoRepository, linkCountryViewCounterRepository)
 	updaterOnLinkVisitProcessed := link_analytics_application.NewUpdaterOnLinkVisitProcessed(logger, linkAnalytics)
 	eventBus.AddSubscribers(link_visit_domain.LinkVisitsProcessedEventName, updaterOnLinkVisitProcessed)
 	creatorOnShorLinkCreated := link_analytics_application.NewCreatorOnShortLinkCreated(logger, linkAnalytics)
 	eventBus.AddSubscribers("ShortLinkCreated", creatorOnShorLinkCreated)
 	creatorOnUserCreated := client_application.NewCreatorOnUserCreated(logger, clientRepo)
 	eventBus.AddSubscribers(auth_domain.UserCreatedEventName, creatorOnUserCreated)
+	eventBus.AddSubscribers(link_visit_domain.LinkVisitsProcessedEventName, incrementerOnLinkVisitProcessed)
 
 	c := cron.New()
-	c.AddFunc("@every 15m", func() {
+	c.AddFunc("@every 5m", func() {
 		err := linkVisitProcessor.Run(context.Background())
 		if err != nil {
 			logger.Error(ctx, "Error running LinkVisitProcessor cron job", shared_domain_context.NewField("error", err))

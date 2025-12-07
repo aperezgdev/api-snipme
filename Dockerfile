@@ -12,6 +12,7 @@ RUN go build -o /app/main ./src/cmd/main.go
 FROM alpine:3.23
 
 WORKDIR /app
+COPY db/geo/GeoLite2-Country.mmdb db/geo/GeoLite2-Country.mmdb
 COPY --from=builder /app/main /snipme-api
 
 RUN adduser -D snipmeuser

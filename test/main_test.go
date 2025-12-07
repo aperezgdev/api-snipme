@@ -70,6 +70,7 @@ func TestMain(m *testing.M) {
 	os.Setenv("OAUTH_GITHUB_CLIENT_SECRET", "test-github-client-secret")
 	os.Setenv("OAUTH_GITHUB_REDIRECT_URL", "http://localhost:8081/auth/github/callback")
 	os.Setenv("OAUTH_STATE_SECRET", "test-state-secret-key-for-csrf-protection")
+	os.Setenv("GEO_FILE_PATH", "../db/geo/GeoLite2-Country.mmdb")
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {

@@ -9,7 +9,7 @@ type LinkCountryViewCounter struct {
 	shared_domain_context.AggregateRoot
 	Id          shared_domain_context.Id
 	LinkId      shared_domain_context.Id
-	CountryCode CountryCode
+	CountryCode shared_domain.CountryCode
 	TotalViews  shared_domain.LinkViewsCounter
 	UniqueViews shared_domain.LinkViewsCounter
 	CreatedOn   shared_domain_context.CreatedOn
@@ -24,7 +24,7 @@ func NewLinkCountryViewCounter(linkId, countryCode string) (*LinkCountryViewCoun
 	if err != nil {
 		return nil, err
 	}
-	countryCodeVO, err := NewCountryCode(countryCode)
+	countryCodeVO, err := shared_domain.NewCountryCode(countryCode)
 	if err != nil {
 		return nil, err
 	}
@@ -42,11 +42,5 @@ func NewLinkCountryViewCounter(linkId, countryCode string) (*LinkCountryViewCoun
 func (lcs *LinkCountryViewCounter) Increment(totalViews, uniqueViews uint) *LinkCountryViewCounter {
 	lcs.TotalViews += shared_domain.LinkViewsCounter(totalViews)
 	lcs.UniqueViews += shared_domain.LinkViewsCounter(uniqueViews)
-	lcs.Record(NewLinkViewCounterIncrementedDomainEvent(
-		lcs.LinkId.String(),
-		string(lcs.CountryCode),
-		uint(lcs.TotalViews),
-		uint(lcs.UniqueViews),
-	))
 	return lcs
 }

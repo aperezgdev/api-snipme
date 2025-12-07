@@ -9,6 +9,7 @@ import (
 	domain_shared "github.com/aperezgdev/api-snipme/src/internal/context/metrics/shared/domain"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/pkg"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -17,11 +18,11 @@ type SqlcLinkCountryViewCounterRepository struct {
 	logger  shared_domain_context.Logger
 }
 
-func NewSqlcLinkCountryViewCounterRepository(q *generated.Queries, logger shared_domain_context.Logger) *SqlcLinkCountryViewCounterRepository {
+func NewSqlcLinkCountryViewCounterRepository(logger shared_domain_context.Logger, q *generated.Queries) *SqlcLinkCountryViewCounterRepository {
 	return &SqlcLinkCountryViewCounterRepository{queries: q, logger: logger}
 }
 
-func (r *SqlcLinkCountryViewCounterRepository) Find(ctx context.Context, idLink shared_domain_context.Id, countryCode domain.CountryCode) (pkg.Optional[domain.LinkCountryViewCounter], error) {
+func (r *SqlcLinkCountryViewCounterRepository) Find(ctx context.Context, idLink shared_domain_context.Id, countryCode domain_shared.CountryCode) (pkg.Optional[*domain.LinkCountryViewCounter], error) {
 	r.logger.Info(ctx, "SqlcLinkCountryViewCounterRepository - Find - Params into", shared_domain_context.NewField("idLink", idLink.String()), shared_domain_context.NewField("countryCode", string(countryCode)))
 	linkID := pgtype.UUID{}
 	_ = linkID.Scan(idLink.String())
@@ -32,22 +33,27 @@ func (r *SqlcLinkCountryViewCounterRepository) Find(ctx context.Context, idLink 
 	}
 
 	result, err := r.queries.FindLinkCounterViewCounter(ctx, params)
+	if err == pgx.ErrNoRows {
+		r.logger.Info(ctx, "SqlcLinkCountryViewCounterRepository - Find - Not found", shared_domain_context.NewField("idLink", idLink.String()), shared_domain_context.NewField("countryCode", string(countryCode)))
+		return pkg.EmptyOptional[*domain.LinkCountryViewCounter](), nil
+	}
+	
 	if err != nil {
 		r.logger.Error(ctx, "SqlcLinkCountryViewCounterRepository - Find - Error querying", shared_domain_context.NewField("error", err.Error()))
-		return pkg.Optional[domain.LinkCountryViewCounter]{}, err
+		return pkg.Optional[*domain.LinkCountryViewCounter]{}, err
 	}
 
 	entity := domain.LinkCountryViewCounter{
 		Id:          shared_domain_context.Id(result.ID.Bytes),
 		LinkId:      shared_domain_context.Id(result.LinkID.Bytes),
-		CountryCode: domain.CountryCode(result.CountryCode),
+		CountryCode: domain_shared.CountryCode(result.CountryCode),
 		TotalViews:  domain_shared.LinkViewsCounter(result.TotalViews.Int32),
 		UniqueViews: domain_shared.LinkViewsCounter(result.UniqueVisitors.Int32),
 		CreatedOn:   shared_domain_context.CreatedOn(result.CreatedOn.Time),
 	}
 
 	r.logger.Info(ctx, "SqlcLinkCountryViewCounterRepository - Find - Success", shared_domain_context.NewField("id", entity.Id.String()))
-	return pkg.Some(entity), nil
+	return pkg.Some(&entity), nil
 }
 
 func (r *SqlcLinkCountryViewCounterRepository) Save(ctx context.Context, linkCountryStats domain.LinkCountryViewCounter) error {

@@ -24,6 +24,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES}
       REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS}
+      GEO_FILE_PATH: ${GEO_FILE_PATH}
     depends_on:
       db:
         condition: service_healthy

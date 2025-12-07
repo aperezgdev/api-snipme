@@ -8,6 +8,7 @@ import (
 
 	"github.com/aperezgdev/api-snipme/db/generated"
 	"github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_visit/domain"
+	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/metrics/shared/domain"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -78,7 +79,7 @@ func (r *SqlcLinkVisitRepository) FindOlds(ctx context.Context) ([]domain.LinkVi
 			Id:        id,
 			LinkId:    linkId,
 			VisitorId: visitorId,
-			Ip:        domain.LinkVisitIP(*row.Ip),
+			Ip:        shared_domain.Ip(*row.Ip),
 			UserAgent: domain.LinkVisitUserAgent(row.UserAgent.String),
 			CreatedOn: shared_domain_context.CreatedOn(row.CreatedOn.Time),
 		}

@@ -10,6 +10,7 @@ import (
 type Config struct {
 	App      AppConfig
 	Database DatabaseConfig
+	GEOFilePath string
 	Server   ServerConfig
 	Redis    RedisConfig
 	Loki     LokiConfig
@@ -82,6 +83,7 @@ func Load() *Config {
 	}
 
 	cfg := &Config{
+		GEOFilePath: getEnv("GEO_FILE_PATH", "../db/geo/GeoLite2-Country.mmdb"),
 		App: AppConfig{
 			Name:    getEnv("APP_NAME", "snipme"),
 			Version: getEnv("APP_VERSION", "1.0.0"),

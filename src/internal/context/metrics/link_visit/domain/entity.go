@@ -1,6 +1,7 @@
 package domain
 
 import (
+	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/metrics/shared/domain"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 )
 
@@ -9,7 +10,7 @@ type LinkVisit struct {
 	Id        shared_domain_context.Id
 	LinkId    shared_domain_context.Id
 	VisitorId shared_domain_context.Id
-	Ip        LinkVisitIP
+	Ip        shared_domain.Ip
 	UserAgent LinkVisitUserAgent
 	CreatedOn shared_domain_context.CreatedOn
 }
@@ -25,7 +26,7 @@ func NewLinkVisit(linkID, visitorId, ip, userAgent string) (*LinkVisit, error) {
 		return nil, err
 	}
 
-	ipVO, err := NewLinkVisitIP(ip)
+	ipVO, err := shared_domain.NewIp(ip)
 	if err != nil {
 		return nil, err
 	}

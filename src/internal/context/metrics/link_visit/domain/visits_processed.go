@@ -6,13 +6,20 @@ import (
 
 const LinkVisitsProcessedEventName = "LinkVisitsProcessed"
 
+type IpsVisits struct {
+	Ip        string
+	TotalViews uint
+	UniqueViews uint
+} 
+
 type LinkVisitsProcessed struct {
 	shared_domain_context.DomainEventBase
 	TotalViews  uint
 	UniqueViews uint
+	IpsFrequency []IpsVisits
 }
 
-func NewLinkVisitsProcessedDomainEvent(linkId string, totalViews, uniqueViews uint) LinkVisitsProcessed {
+func NewLinkVisitsProcessedDomainEvent(linkId string, totalViews, uniqueViews uint, ipsFrequency []IpsVisits) LinkVisitsProcessed {
 	return LinkVisitsProcessed{
 		DomainEventBase: shared_domain_context.NewDomainEvent(
 			linkId,
@@ -20,6 +27,7 @@ func NewLinkVisitsProcessedDomainEvent(linkId string, totalViews, uniqueViews ui
 		),
 		TotalViews:  totalViews,
 		UniqueViews: uniqueViews,
+		IpsFrequency: ipsFrequency,
 	}
 }
 

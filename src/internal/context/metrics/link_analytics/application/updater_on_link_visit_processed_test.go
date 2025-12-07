@@ -32,7 +32,7 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 			UniqueViews: shared_domain.NewLinkViewsCounter(5),
 		}
 
-		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2)
+		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2, []link_visit_domain.IpsVisits{})
 
 		repo.On("FindByLinkId", mock.Anything, domainId).Return(pkg.Some(existingLinkAnalytics), nil)
 		repo.On("Update", mock.Anything, mock.AnythingOfType("domain.LinkAnalytics")).Return(nil)
@@ -57,7 +57,7 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 		linkId := "00000000-0000-0000-0000-000000000002"
 		domainId, _ := shared_domain_context.ParseID(linkId)
 
-		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2)
+		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2, []link_visit_domain.IpsVisits{})
 
 		repo.On("FindByLinkId", mock.Anything, domainId).Return(pkg.EmptyOptional[*domain.LinkAnalytics](), errors.New("not found"))
 
@@ -85,7 +85,7 @@ func TestUpdaterOnLinkVisitProcessed_On(t *testing.T) {
 			UniqueViews: shared_domain.NewLinkViewsCounter(5),
 		}
 
-		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2)
+		event := link_visit_domain.NewLinkVisitsProcessedDomainEvent(linkId, 3, 2, []link_visit_domain.IpsVisits{})
 
 		repo.On("FindByLinkId", mock.Anything, domainId).Return(pkg.Some(existingLinkAnalytics), nil)
 		repo.On("Update", mock.Anything, mock.AnythingOfType("domain.LinkAnalytics")).Return(errors.New("database error"))
