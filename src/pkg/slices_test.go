@@ -130,3 +130,32 @@ func TestMapToDouble(t *testing.T) {
 		})
 	}
 }
+
+func TestGroupBy(t *testing.T) {
+	type person struct {
+		Name string
+		Age  int
+	}
+	people := []person{
+		{"Alice", 30},
+		{"Bob", 25},
+		{"Charlie", 30},
+		{"David", 25},
+	}
+	grouped := GroupBy(people, func(p person) int { return p.Age })
+	if len(grouped) != 2 {
+		t.Errorf("expected 2 groups, got %d", len(grouped))
+	}
+	if len(grouped[30]) != 2 || len(grouped[25]) != 2 {
+		t.Errorf("expected 2 people in each group, got %v", grouped)
+	}
+	ages := map[int]bool{25: false, 30: false}
+	for age := range grouped {
+		ages[age] = true
+	}
+	for age, found := range ages {
+		if !found {
+			t.Errorf("expected group for age %d", age)
+		}
+	}
+}
