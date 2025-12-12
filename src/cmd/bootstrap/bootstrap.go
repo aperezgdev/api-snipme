@@ -154,7 +154,7 @@ func Run() error {
 	eventBus.AddSubscribers(link_visit_domain.LinkVisitsProcessedEventName, incrementerOnLinkVisitProcessed)
 
 	c := cron.New()
-	c.AddFunc("@every 5m", func() {
+	c.AddFunc("@every 15m", func() {
 		err := linkVisitProcessor.Run(context.Background())
 		if err != nil {
 			logger.Error(ctx, "Error running LinkVisitProcessor cron job", shared_domain_context.NewField("error", err))

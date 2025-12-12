@@ -72,18 +72,27 @@ func (p *LinkVisitProcessor) calculateVisits(ctx context.Context, linkVisitGroup
 		uniqueVisitors := make(map[string]struct{})
 		type ipStats struct {
 			total    uint
-			visitors map[string]struct{}
+			unique uint
 		}
 		ipsStats := make(map[string]*ipStats)
 
 		for _, visit := range visits {
-			uniqueVisitors[visit.VisitorId.String()] = struct{}{}
-			ipStr := visit.Ip.String()
-			if ipsStats[ipStr] == nil {
-				ipsStats[ipStr] = &ipStats{visitors: make(map[string]struct{})}
+			_, existsVisitor := uniqueVisitors[visit.VisitorId.String()];
+			if !existsVisitor {
+				uniqueVisitors[visit.VisitorId.String()] = struct{}{}
 			}
-			ipsStats[ipStr].total++
-			ipsStats[ipStr].visitors[visit.VisitorId.String()] = struct{}{}
+			_, existsIp := ipsStats[visit.Ip.String()]
+			if !existsIp && !existsVisitor {
+				ipsStats[visit.Ip.String()] = &ipStats{
+					total:    1,
+					unique: 1,
+				}
+			} else if existsIp && !existsVisitor {
+				ipsStats[visit.Ip.String()].total += 1
+				ipsStats[visit.Ip.String()].unique += 1
+			} else if existsIp && existsVisitor {
+				ipsStats[visit.Ip.String()].total += 1
+			}
 		}
 		uniqueViews := uint(len(uniqueVisitors))
 
@@ -92,7 +101,7 @@ func (p *LinkVisitProcessor) calculateVisits(ctx context.Context, linkVisitGroup
 			ipsFrequency = append(ipsFrequency, domain.IpsVisits{
 				Ip:          ip,
 				TotalViews:  stats.total,
-				UniqueViews: uint(len(stats.visitors)),
+				UniqueViews: stats.unique,
 			})
 		}
 
