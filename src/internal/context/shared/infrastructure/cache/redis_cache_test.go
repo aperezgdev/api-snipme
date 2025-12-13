@@ -77,4 +77,33 @@ func TestRedisCache_Integration(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "", val)
 	})
+
+	t.Run("Set with invalid value returns error", func(t *testing.T) {
+		invalidValue := make(chan int)
+		err := cache.Set(ctx, "invalid", invalidValue, 10*time.Second)
+		assert.Error(t, err)
+	})
+}
+
+func TestRedisCache_ErrorHandling(t *testing.T) {
+	_, client, teardown := setupRedisContainer(t)
+	cache := NewRedisCache(&shared_domain_context.DummyLogger{}, client)
+	ctx := context.Background()
+
+	t.Run("Get returns error when redis fails", func(t *testing.T) {
+		client.Close()
+		teardown()
+		_, err := cache.Get(ctx, "any-key")
+		assert.Error(t, err)
+	})
+
+	t.Run("Set returns error when redis connection is closed", func(t *testing.T) {
+		err := cache.Set(ctx, "key", "value", 10*time.Second)
+		assert.Error(t, err)
+	})
+
+	t.Run("Del returns error when redis connection is closed", func(t *testing.T) {
+		err := cache.Del(ctx, "key")
+		assert.Error(t, err)
+	})
 }
