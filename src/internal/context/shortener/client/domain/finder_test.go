@@ -12,6 +12,7 @@ import (
 func TestClientFinder(t *testing.T) {
 	logger := shared_domain_context.DummyLogger{}
 	t.Run("FindById returns client when found", func(t *testing.T) {
+		t.Parallel()
 		repo := &ClientRepositoryMock{}
 		finder := NewClientFinder(logger, repo)
 
@@ -36,6 +37,7 @@ func TestClientFinder(t *testing.T) {
 	})
 
 	t.Run("FindById returns empty when not found", func(t *testing.T) {
+		t.Parallel()
 		repo := &ClientRepositoryMock{}
 		finder := NewClientFinder(logger, repo)
 

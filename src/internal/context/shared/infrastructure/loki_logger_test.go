@@ -42,7 +42,7 @@ func TestLokiLogger_SendsLogsToLoki(t *testing.T) {
 
 	t.Run("Info log is sent correctly", func(t *testing.T) {
 		logger.Info(ctx, "test info message", shared.NewField("key", "value"))
-		time.Sleep(100 * time.Millisecond) // Wait for goroutine
+		time.Sleep(100 * time.Millisecond)
 
 		mu.Lock()
 		defer mu.Unlock()
