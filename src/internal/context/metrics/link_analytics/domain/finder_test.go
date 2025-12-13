@@ -13,6 +13,7 @@ import (
 func TestLinkAnalyticsFinder(t *testing.T) {
 	logger := shared_domain_context.DummyLogger{}
 	t.Run("Run returns link analytics when found", func(t *testing.T) {
+		t.Parallel()
 		repo := &LinkAnalyticsRepositoryMock{}
 		finder := NewLinkAnalyticsFinder(logger, repo)
 
@@ -38,6 +39,7 @@ func TestLinkAnalyticsFinder(t *testing.T) {
 	})
 
 	t.Run("Run returns error when not found", func(t *testing.T) {
+		t.Parallel()
 		repo := &LinkAnalyticsRepositoryMock{}
 		finder := NewLinkAnalyticsFinder(logger, repo)
 
@@ -55,6 +57,7 @@ func TestLinkAnalyticsFinder(t *testing.T) {
 	})
 
 	t.Run("Run returns error when linkId is invalid", func(t *testing.T) {
+		t.Parallel()
 		repo := &LinkAnalyticsRepositoryMock{}
 		finder := NewLinkAnalyticsFinder(logger, repo)
 
