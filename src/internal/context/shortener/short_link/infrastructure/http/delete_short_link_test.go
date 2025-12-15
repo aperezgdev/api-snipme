@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -30,7 +29,7 @@ func TestDeleteShortLinkHTTPHandler_Handler(t *testing.T) {
 		})).Return(nil)
 
 		remover := application.NewShortLinkRemover(logger, mockRepo)
-		handler := NewDeleteShortLinkHTTPHandler(logger, remover)
+		handler := NewDeleteShortLinkHTTPHandler(logger, *remover)
 
 		req := httptest.NewRequest(http.MethodDelete, "/short-link/"+shortLink.Id.String(), nil)
 		req.SetPathValue("short_code", shortLink.Id.String())
