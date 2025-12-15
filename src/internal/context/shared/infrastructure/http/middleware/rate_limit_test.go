@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"net/http/httptest"
-	"testing"
-	"github.com/stretchr/testify/assert"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	http "github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http"
+	"github.com/stretchr/testify/assert"
+	"net/http/httptest"
+	"testing"
 )
 
 func TestRateLimitMiddleware(t *testing.T) {

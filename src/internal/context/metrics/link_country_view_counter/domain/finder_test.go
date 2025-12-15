@@ -24,7 +24,7 @@ func TestLinkCountryViewCounter(t *testing.T) {
 
 		expectedLinkCountryViewCounter := &LinkCountryViewCounter{
 			CountryCode: shared_domain.CountryCode(countryCode),
-			TotalViews:       10,
+			TotalViews:  10,
 		}
 
 		repo.On("Find", mock.Anything, mock.Anything, mock.Anything).Return(pkg.Some(expectedLinkCountryViewCounter), nil)

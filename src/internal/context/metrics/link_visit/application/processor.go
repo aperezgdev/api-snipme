@@ -71,20 +71,20 @@ func (p *LinkVisitProcessor) calculateVisits(ctx context.Context, linkVisitGroup
 
 		uniqueVisitors := make(map[string]struct{})
 		type ipStats struct {
-			total    uint
+			total  uint
 			unique uint
 		}
 		ipsStats := make(map[string]*ipStats)
 
 		for _, visit := range visits {
-			_, existsVisitor := uniqueVisitors[visit.VisitorId.String()];
+			_, existsVisitor := uniqueVisitors[visit.VisitorId.String()]
 			if !existsVisitor {
 				uniqueVisitors[visit.VisitorId.String()] = struct{}{}
 			}
 			_, existsIp := ipsStats[visit.Ip.String()]
 			if !existsIp && !existsVisitor {
 				ipsStats[visit.Ip.String()] = &ipStats{
-					total:    1,
+					total:  1,
 					unique: 1,
 				}
 			} else if existsIp && !existsVisitor {

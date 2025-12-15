@@ -31,16 +31,16 @@ func (u LinkCountryViewCounterIncrementer) Run(ctx context.Context, linkId, coun
 
 	if !linkCountryViewCounterOptional.IsPresent() {
 		u.logger.Info(ctx, "LinkCountryViewCounterIncrementer - Run - Link country view counter not found, creating new one", shared_domain_context.NewField("linkCountryViewCounter", linkId))
-		
-		newLinkCountryViewCounter, err  := NewLinkCountryViewCounter(linkId, countryCode)
+
+		newLinkCountryViewCounter, err := NewLinkCountryViewCounter(linkId, countryCode)
 		if err != nil {
 			u.logger.Error(ctx, "LinkCountryViewCounterIncrementer - Run - Error creating new link country view counter", shared_domain_context.NewField("error", err.Error()))
-			return nil,  err
+			return nil, err
 		}
 
 		newLinkCountryViewCounter.Increment(totalViews, uniqueViews)
 		err = u.repo.Save(ctx, *newLinkCountryViewCounter)
-		if  err != nil {
+		if err != nil {
 			u.logger.Error(ctx, "LinkCountryViewCounterIncrementer - Run - Error saving new link country view counter", shared_domain_context.NewField("error", err.Error()))
 			return nil, err
 		}

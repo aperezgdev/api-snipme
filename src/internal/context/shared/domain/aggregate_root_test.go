@@ -1,16 +1,16 @@
 package domain
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 	"time"
 )
 
 type testEvent struct{}
 
-func (testEvent) ID() string          { return "id" }
-func (testEvent) Name() string        { return "test" }
-func (testEvent) AggregateID() string { return "aggid" }
+func (testEvent) ID() string            { return "id" }
+func (testEvent) Name() string          { return "test" }
+func (testEvent) AggregateID() string   { return "aggid" }
 func (testEvent) OccurredOn() time.Time { return time.Now().UTC() }
 
 func TestAggregateRoot(t *testing.T) {

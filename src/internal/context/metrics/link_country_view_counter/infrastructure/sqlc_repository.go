@@ -37,7 +37,7 @@ func (r *SqlcLinkCountryViewCounterRepository) Find(ctx context.Context, idLink 
 		r.logger.Info(ctx, "SqlcLinkCountryViewCounterRepository - Find - Not found", shared_domain_context.NewField("idLink", idLink.String()), shared_domain_context.NewField("countryCode", string(countryCode)))
 		return pkg.EmptyOptional[*domain.LinkCountryViewCounter](), nil
 	}
-	
+
 	if err != nil {
 		r.logger.Error(ctx, "SqlcLinkCountryViewCounterRepository - Find - Error querying", shared_domain_context.NewField("error", err.Error()))
 		return pkg.Optional[*domain.LinkCountryViewCounter]{}, err

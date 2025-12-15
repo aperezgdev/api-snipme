@@ -1,9 +1,9 @@
 package domain
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestDomainEventBase(t *testing.T) {

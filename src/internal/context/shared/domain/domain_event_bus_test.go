@@ -2,12 +2,12 @@ package domain
 
 import (
 	"context"
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 type mockSubscriber struct {
-	called bool
+	called        bool
 	receivedEvent DomainEvent
 }
 
@@ -18,8 +18,9 @@ func (m *mockSubscriber) On(ctx context.Context, event DomainEvent) error {
 }
 
 type testEventWithName struct {
-    DomainEventBase
+	DomainEventBase
 }
+
 func (t testEventWithName) Name() string { return t.DomainEventBase.Name }
 
 func TestEventBusInMemory(t *testing.T) {

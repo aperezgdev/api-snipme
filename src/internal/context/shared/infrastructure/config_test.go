@@ -18,7 +18,7 @@ func TestConfig_Load(t *testing.T) {
 		os.Setenv("REDIS_URL", "localhost:6380")
 		os.Setenv("APP_NAME", "test-app")
 		os.Setenv("ENV", "test")
-		
+
 		defer func() {
 			os.Unsetenv("JWT_SECRET")
 			os.Unsetenv("OAUTH_STATE_SECRET")
@@ -48,7 +48,7 @@ func TestConfig_Load(t *testing.T) {
 		os.Setenv("JWT_SECRET", "test-jwt-secret")
 		os.Setenv("OAUTH_STATE_SECRET", "test-oauth-secret")
 		os.Setenv("ENV", "test")
-		
+
 		defer func() {
 			os.Unsetenv("JWT_SECRET")
 			os.Unsetenv("OAUTH_STATE_SECRET")
@@ -67,7 +67,7 @@ func TestConfig_Load(t *testing.T) {
 	t.Run("panics when JWT_SECRET is missing", func(t *testing.T) {
 		os.Setenv("OAUTH_STATE_SECRET", "test-oauth-secret")
 		os.Setenv("ENV", "test")
-		
+
 		defer func() {
 			os.Unsetenv("OAUTH_STATE_SECRET")
 			os.Unsetenv("ENV")
@@ -81,7 +81,7 @@ func TestConfig_Load(t *testing.T) {
 	t.Run("panics when OAUTH_STATE_SECRET is missing", func(t *testing.T) {
 		os.Setenv("JWT_SECRET", "test-jwt-secret")
 		os.Setenv("ENV", "test")
-		
+
 		defer func() {
 			os.Unsetenv("JWT_SECRET")
 			os.Unsetenv("ENV")
@@ -97,7 +97,7 @@ func TestConfig_Load(t *testing.T) {
 		os.Setenv("OAUTH_STATE_SECRET", "test-oauth-secret")
 		os.Setenv("SERVER_PORT", "invalid")
 		os.Setenv("ENV", "test")
-		
+
 		defer func() {
 			os.Unsetenv("JWT_SECRET")
 			os.Unsetenv("OAUTH_STATE_SECRET")
@@ -115,7 +115,7 @@ func TestConfig_Load(t *testing.T) {
 		os.Setenv("OAUTH_STATE_SECRET", "test-oauth-secret")
 		os.Setenv("JWT_EXPIRATION_MINUTES", "not-a-number")
 		os.Setenv("ENV", "test")
-		
+
 		defer func() {
 			os.Unsetenv("JWT_SECRET")
 			os.Unsetenv("OAUTH_STATE_SECRET")
@@ -133,7 +133,7 @@ func TestConfig_Load(t *testing.T) {
 		os.Setenv("OAUTH_STATE_SECRET", "test-oauth-secret")
 		os.Setenv("REFRESH_TOKEN_TTL_DAYS", "not-a-number")
 		os.Setenv("ENV", "test")
-		
+
 		defer func() {
 			os.Unsetenv("JWT_SECRET")
 			os.Unsetenv("OAUTH_STATE_SECRET")

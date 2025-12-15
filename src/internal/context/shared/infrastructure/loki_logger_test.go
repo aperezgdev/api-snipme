@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	shared "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLokiLogger_SendsLogsToLoki(t *testing.T) {

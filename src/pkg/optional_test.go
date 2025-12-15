@@ -1,4 +1,3 @@
-
 package pkg
 
 import "testing"

@@ -30,7 +30,7 @@ func TestLinkCountryViewCounterIncrementer_Run(t *testing.T) {
 		countryCodeVO, _ := shared_domain.NewCountryCode(countryCode)
 		repo.On("Find", mock.Anything, domainId, countryCodeVO).Return(pkg.EmptyOptional[*LinkCountryViewCounter](), nil)
 		repo.On("Save", mock.Anything, mock.AnythingOfType("domain.LinkCountryViewCounter")).Return(nil)
-		
+
 		result, err := incrementer.Run(context.Background(), linkId, countryCode, uniqueViews, totalViews)
 
 		if err != nil {

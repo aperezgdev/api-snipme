@@ -57,9 +57,10 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 type DummyRoute struct{}
+
 func (DummyRoute) Handler(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) }
-func (DummyRoute) Route() string  { return "/" }
-func (DummyRoute) Method() string { return "GET" }
+func (DummyRoute) Route() string                                  { return "/" }
+func (DummyRoute) Method() string                                 { return "GET" }
 
 type Route interface {
 	Handler(w http.ResponseWriter, r *http.Request)

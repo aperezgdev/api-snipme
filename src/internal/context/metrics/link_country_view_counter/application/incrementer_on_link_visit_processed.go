@@ -12,9 +12,9 @@ import (
 )
 
 type IncremeterOnLinkVisitProcessed struct {
-	logger shared_domain_context.Logger
+	logger        shared_domain_context.Logger
 	countryFinder geo_application.CountryFinder
-	incrementer domain.LinkCountryViewCounterIncrementer
+	incrementer   domain.LinkCountryViewCounterIncrementer
 }
 
 func NewIncremeterOnLinkVisitProcessed(
@@ -23,9 +23,9 @@ func NewIncremeterOnLinkVisitProcessed(
 	repo domain.LinkCountryViewCounterRepository,
 ) *IncremeterOnLinkVisitProcessed {
 	return &IncremeterOnLinkVisitProcessed{
-		logger: logger,
+		logger:        logger,
 		countryFinder: *geo_application.NewCountryFinder(logger, repoGeo),
-		incrementer:    *domain.NewLinkCountryViewCounterIncrementer(logger, repo),
+		incrementer:   *domain.NewLinkCountryViewCounterIncrementer(logger, repo),
 	}
 }
 
@@ -40,12 +40,12 @@ func (u *IncremeterOnLinkVisitProcessed) On(ctx context.Context, event shared_do
 	u.logger.Info(ctx, "IncremeterOnLinkVisitProcessed - On - Processing LinkVisitProcessed event", shared_domain_context.NewField("aggregateID", eventData.AggregateID()), shared_domain_context.NewField("ipsFrequency", eventData.IpsFrequency))
 
 	cacheIp := make(map[string]string)
-	reduceViewsByCountry := make(map[string]struct{
+	reduceViewsByCountry := make(map[string]struct {
 		uniqueViews uint
 		totalViews  uint
 	})
 
-	for _, ip:= range eventData.IpsFrequency {
+	for _, ip := range eventData.IpsFrequency {
 		isoCode := "UNK"
 		if cacheIp[ip.Ip] == "" {
 			u.logger.Info(ctx, "IncremeterOnLinkVisitProcessed - On - Country not in cache for IP, looking up", shared_domain_context.NewField("ip", ip.Ip))
@@ -74,7 +74,7 @@ func (u *IncremeterOnLinkVisitProcessed) On(ctx context.Context, event shared_do
 			reduceViewsByCountry[isoCode] = viewsByCountry
 		} else {
 			u.logger.Info(ctx, "IncremeterOnLinkVisitProcessed - On - Setting initial views for country", shared_domain_context.NewField("country", isoCode))
-			reduceViewsByCountry[isoCode] = struct{
+			reduceViewsByCountry[isoCode] = struct {
 				uniqueViews uint
 				totalViews  uint
 			}{

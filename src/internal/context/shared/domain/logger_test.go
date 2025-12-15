@@ -2,8 +2,8 @@ package domain
 
 import (
 	"context"
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestField_String(t *testing.T) {

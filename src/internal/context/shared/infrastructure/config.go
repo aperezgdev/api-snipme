@@ -8,14 +8,14 @@ import (
 )
 
 type Config struct {
-	App      AppConfig
-	Database DatabaseConfig
+	App         AppConfig
+	Database    DatabaseConfig
 	GEOFilePath string
-	Server   ServerConfig
-	Redis    RedisConfig
-	Loki     LokiConfig
-	OAuth    OAuthConfig
-	JWT      JWTConfig
+	Server      ServerConfig
+	Redis       RedisConfig
+	Loki        LokiConfig
+	OAuth       OAuthConfig
+	JWT         JWTConfig
 }
 
 type AppConfig struct {

@@ -9,6 +9,7 @@ import (
 	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/pkg"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -51,7 +52,7 @@ func (r *SqlcRefreshTokenRepository) FindByToken(ctx context.Context, token stri
 	r.logger.Info(ctx, "SqlcRefreshTokenRepository - FindByToken - Searching for refresh token", shared_domain.NewField("token", token))
 	refreshToken, err := r.queries.GetRefreshTokenByToken(ctx, token)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == sql.ErrNoRows || err == pgx.ErrNoRows {
 			r.logger.Info(ctx, "SqlcRefreshTokenRepository - FindByToken - Refresh token not found", shared_domain.NewField("token", token))
 			return pkg.EmptyOptional[*domain.RefreshToken](), nil
 		}

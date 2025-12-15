@@ -2,8 +2,8 @@ package domain
 
 import (
 	"context"
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 type testLogger struct {
@@ -12,9 +12,15 @@ type testLogger struct {
 	debugs []string
 }
 
-func (t *testLogger) Info(ctx context.Context, msg string, fields ...Field)  { t.infos = append(t.infos, msg) }
-func (t *testLogger) Error(ctx context.Context, msg string, fields ...Field) { t.errors = append(t.errors, msg) }
-func (t *testLogger) Debug(ctx context.Context, msg string, fields ...Field) { t.debugs = append(t.debugs, msg) }
+func (t *testLogger) Info(ctx context.Context, msg string, fields ...Field) {
+	t.infos = append(t.infos, msg)
+}
+func (t *testLogger) Error(ctx context.Context, msg string, fields ...Field) {
+	t.errors = append(t.errors, msg)
+}
+func (t *testLogger) Debug(ctx context.Context, msg string, fields ...Field) {
+	t.debugs = append(t.debugs, msg)
+}
 
 func TestCompositeLogger(t *testing.T) {
 	t.Run("delegates Info, Error, Debug to all loggers", func(t *testing.T) {

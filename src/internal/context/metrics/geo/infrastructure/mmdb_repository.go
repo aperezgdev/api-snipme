@@ -13,13 +13,13 @@ import (
 
 type MMDBRepository struct {
 	logger shared_domain_context.Logger
-	db maxminddb.Reader
+	db     maxminddb.Reader
 }
 
 func NewMMDBRepository(logger shared_domain_context.Logger, db maxminddb.Reader) *MMDBRepository {
 	return &MMDBRepository{
 		logger: logger,
-		db: db,
+		db:     db,
 	}
 }
 

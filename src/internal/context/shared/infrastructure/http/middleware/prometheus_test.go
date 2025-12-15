@@ -4,10 +4,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	customhttp "github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/stretchr/testify/assert"
-	customhttp "github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http"
 )
 
 func TestPrometheusMiddleware(t *testing.T) {

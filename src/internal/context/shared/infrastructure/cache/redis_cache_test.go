@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
+	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	goredis "github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 )
 
 func setupRedisContainer(t *testing.T) (container testcontainers.Container, client *goredis.Client, teardown func()) {

@@ -37,8 +37,8 @@ func TestNewLinkAnalytics(t *testing.T) {
 	t.Run("Fails on invalid linkID", func(t *testing.T) {
 		t.Parallel()
 		tests := []struct {
-			name    string
-			linkID  string
+			name   string
+			linkID string
 		}{
 			{
 				name:   "invalid UUID format",
