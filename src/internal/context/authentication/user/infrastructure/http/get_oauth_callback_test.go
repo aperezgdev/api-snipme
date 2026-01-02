@@ -8,9 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/application"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
+	refresh_token_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
+	refresh_token_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/infrastructure"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/application"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/infrastructure"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/stretchr/testify/mock"
@@ -23,14 +25,14 @@ func TestGetOAuthCallbackHandler(t *testing.T) {
 	t.Run("handles callback successfully", func(t *testing.T) {
 		t.Parallel()
 		oauthClient := &infrastructure.OAuthClientMock{}
-		userRepo := &domain.UserRepositoryMock{}
-		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		jwtManager := &infrastructure.JWTManagerMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
+		refreshTokenRepo := &refresh_token_domain.RefreshTokenRepositoryMock{}
+		jwtManager := &refresh_token_infrastructure.JWTManagerMock{}
 		eventBus := &shared_domain.EventBusMock{}
 
 		authenticator := application.NewAuthenticator(logger, userRepo, refreshTokenRepo, jwtManager, eventBus, 30, 20)
 		stateSecret := "test-secret-key"
-		handler := NewGetOAuthCallbackHandler(logger, oauthClient, authenticator, domain.OAuthProviderGoogle, stateSecret)
+		handler := NewGetOAuthCallbackHandler(logger, oauthClient, authenticator, user_domain.OAuthProviderGoogle, stateSecret)
 
 		state := "test-state-value"
 		h := hmac.New(sha256.New, []byte(stateSecret))
@@ -47,11 +49,11 @@ func TestGetOAuthCallbackHandler(t *testing.T) {
 		oauthClient.On("ExchangeCode", mock.Anything, "auth-code").Return(token, nil)
 		oauthClient.On("GetUserInfo", mock.Anything, token).Return(userInfo, nil)
 
-		userRepo.On("FindByOAuthProviderAndSubject", mock.Anything, domain.OAuthProviderGoogle, "oauth-subject-123").
-			Return(pkg.EmptyOptional[*domain.User](), nil)
-		userRepo.On("Save", mock.Anything, mock.AnythingOfType("*domain.User")).Return(nil)
+		userRepo.On("FindByOAuthProviderAndSubject", mock.Anything, user_domain.OAuthProviderGoogle, "oauth-subject-123").
+			Return(pkg.EmptyOptional[*user_domain.User](), nil)
+		userRepo.On("Save", mock.Anything, mock.Anything).Return(nil)
 		jwtManager.On("Generate", mock.Anything, "test@example.com").Return("jwt-token", nil)
-		refreshTokenRepo.On("Save", mock.Anything, mock.AnythingOfType("*domain.RefreshToken")).Return(nil)
+		refreshTokenRepo.On("Save", mock.Anything, mock.Anything).Return(nil)
 		eventBus.On("Publish", mock.Anything, mock.Anything).Return()
 
 		req := httptest.NewRequest(http.MethodGet, "/auth/google/callback?code=auth-code&state="+state, nil)
@@ -71,13 +73,13 @@ func TestGetOAuthCallbackHandler(t *testing.T) {
 	t.Run("fails when code parameter is missing", func(t *testing.T) {
 		t.Parallel()
 		oauthClient := &infrastructure.OAuthClientMock{}
-		userRepo := &domain.UserRepositoryMock{}
-		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		jwtManager := &infrastructure.JWTManagerMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
+		refreshTokenRepo := &refresh_token_domain.RefreshTokenRepositoryMock{}
+		jwtManager := &refresh_token_infrastructure.JWTManagerMock{}
 		eventBus := &shared_domain.EventBusMock{}
 
 		authenticator := application.NewAuthenticator(logger, userRepo, refreshTokenRepo, jwtManager, eventBus, 30, 20)
-		handler := NewGetOAuthCallbackHandler(logger, oauthClient, authenticator, domain.OAuthProviderGoogle, "test-secret-key")
+		handler := NewGetOAuthCallbackHandler(logger, oauthClient, authenticator, user_domain.OAuthProviderGoogle, "test-secret-key")
 
 		req := httptest.NewRequest(http.MethodGet, "/auth/google/callback", nil)
 		w := httptest.NewRecorder()
@@ -92,13 +94,13 @@ func TestGetOAuthCallbackHandler(t *testing.T) {
 
 	t.Run("has correct route", func(t *testing.T) {
 		oauthClient := &infrastructure.OAuthClientMock{}
-		userRepo := &domain.UserRepositoryMock{}
-		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		jwtManager := &infrastructure.JWTManagerMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
+		refreshTokenRepo := &refresh_token_domain.RefreshTokenRepositoryMock{}
+		jwtManager := &refresh_token_infrastructure.JWTManagerMock{}
 		eventBus := &shared_domain.EventBusMock{}
 
 		authenticator := application.NewAuthenticator(logger, userRepo, refreshTokenRepo, jwtManager, eventBus, 30, 20)
-		handler := NewGetOAuthCallbackHandler(logger, oauthClient, authenticator, domain.OAuthProviderGoogle, "test-secret-key")
+		handler := NewGetOAuthCallbackHandler(logger, oauthClient, authenticator, user_domain.OAuthProviderGoogle, "test-secret-key")
 
 		route := handler.Route()
 		if route != "/auth/google/callback" {

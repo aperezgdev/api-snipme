@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"net/http"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/infrastructure"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 )
 

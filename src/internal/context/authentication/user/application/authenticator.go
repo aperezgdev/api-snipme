@@ -6,7 +6,8 @@ import (
 	"encoding/base64"
 	"time"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	refresh_token_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 )
 
@@ -14,25 +15,25 @@ type AuthenticationResult struct {
 	AccessToken  string
 	RefreshToken string
 	ExpiresIn    int
-	User         *domain.User
+	User         *user_domain.User
 }
 
 type Authenticator struct {
 	logger                shared_domain.Logger
-	userRepo              domain.UserRepository
-	refreshTokenRepo      domain.RefreshTokenRepository
-	tokenManager          domain.TokenManager
+	userRepo              user_domain.UserRepository
+	refreshTokenRepo      refresh_token_domain.RefreshTokenRepository
+	tokenManager          refresh_token_domain.TokenManager
 	eventBus              shared_domain.EventBus
-	userEmailUpdater      domain.UserEmailUpdater
+	userEmailUpdater      user_domain.UserEmailUpdater
 	refreshTokenTTLDays   int
 	jwtExpirantionMinutes int
 }
 
 func NewAuthenticator(
 	logger shared_domain.Logger,
-	userRepo domain.UserRepository,
-	refreshTokenRepo domain.RefreshTokenRepository,
-	tokenManager domain.TokenManager,
+	userRepo user_domain.UserRepository,
+	refreshTokenRepo refresh_token_domain.RefreshTokenRepository,
+	tokenManager refresh_token_domain.TokenManager,
 	eventBus shared_domain.EventBus,
 	refreshTokenTTLDays int,
 	jwtExpirantionMinutes int,
@@ -43,7 +44,7 @@ func NewAuthenticator(
 		refreshTokenRepo:      refreshTokenRepo,
 		tokenManager:          tokenManager,
 		eventBus:              eventBus,
-		userEmailUpdater:      *domain.NewUserEmailUpdater(logger, userRepo),
+		userEmailUpdater:      *user_domain.NewUserEmailUpdater(logger, userRepo),
 		refreshTokenTTLDays:   refreshTokenTTLDays,
 		jwtExpirantionMinutes: jwtExpirantionMinutes,
 	}
@@ -51,7 +52,7 @@ func NewAuthenticator(
 
 func (a *Authenticator) Run(
 	ctx context.Context,
-	provider domain.OAuthProvider,
+	provider user_domain.OAuthProvider,
 	oauthSubject string,
 	email string,
 ) (*AuthenticationResult, error) {
@@ -63,7 +64,7 @@ func (a *Authenticator) Run(
 		return nil, err
 	}
 
-	var user *domain.User
+	var user *user_domain.User
 
 	if userOpt.IsPresent() {
 		a.logger.Info(ctx, "Authenticator - Run - User found, proceeding to authenticate", shared_domain.Field{Key: "user_id", Value: userOpt.Get().Id.String()})
@@ -80,7 +81,7 @@ func (a *Authenticator) Run(
 	} else {
 		a.logger.Info(ctx, "Authenticator - Run - User not found, creating new user", shared_domain.Field{Key: "email", Value: email})
 
-		user, err = domain.NewUser(email, provider, oauthSubject)
+		user, err = user_domain.NewUser(email, provider, oauthSubject)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +109,7 @@ func (a *Authenticator) Run(
 	}
 	a.logger.Info(ctx, "Authenticator - Run - Refresh token generated successfully", shared_domain.Field{Key: "user_id", Value: user.Id.String()})
 
-	refreshToken, err := domain.NewRefreshToken(
+	refreshToken, err := refresh_token_domain.NewRefreshToken(
 		user.Id.String(),
 		refreshTokenStr,
 		time.Now().Add(time.Duration(a.refreshTokenTTLDays)*24*time.Hour),

@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"github.com/aperezgdev/api-snipme/db/generated"
-	auth_application "github.com/aperezgdev/api-snipme/src/internal/context/authentication/application"
-	auth_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
-	auth_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
-	auth_http "github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure/http"
+	refresh_token_application "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/application"
+	refresh_token_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/infrastructure"
+	user_application "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/application"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
+	user_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/infrastructure"
+	auth_http "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/infrastructure/http"
 	geo_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/geo/infrastructure"
 	link_analytics_application "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/application"
 	link_analytics_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/metrics/link_analytics/infrastructure"
@@ -89,25 +91,25 @@ func Run() error {
 	clientRepo := client_infrastructure.NewSqlcClientRepository(logger, queries)
 	linkVisitRepository := link_visit_infrastructure.NewSqlcLinkVisitRepository(logger, queries)
 	linkAnalytics := link_analytics_infrastructure.NewSqlcLinkAnalyticsRepository(logger, queries)
-	userRepository := auth_infrastructure.NewSqlcUserRepository(logger, queries)
-	refreshTokenRepository := auth_infrastructure.NewSqlcRefreshTokenRepository(logger, queries)
+	userRepository := user_infrastructure.NewSqlcUserRepository(logger, queries)
+	refreshTokenRepository := refresh_token_infrastructure.NewSqlcRefreshTokenRepository(logger, queries)
 	linkCountryViewCounterRepository := link_country_view_counter_infrastructure.NewSqlcLinkCountryViewCounterRepository(logger, queries)
 	geoRepository := geo_infrastructure.NewMMDBRepository(logger, *db)
 
-	jwtManager := auth_infrastructure.NewJWTManager(conf.JWT.Secret, conf.JWT.ExpirationMinutes)
+	jwtManager := refresh_token_infrastructure.NewJWTManager(conf.JWT.Secret, conf.JWT.ExpirationMinutes)
 
-	googleOAuthClient := auth_infrastructure.NewGoogleOAuthClient(
+	googleOAuthClient := user_infrastructure.NewGoogleOAuthClient(
 		conf.OAuth.GoogleClientID,
 		conf.OAuth.GoogleClientSecret,
 		conf.OAuth.GoogleRedirectURL,
 	)
-	githubOAuthClient := auth_infrastructure.NewGitHubOAuthClient(
+	githubOAuthClient := user_infrastructure.NewGitHubOAuthClient(
 		conf.OAuth.GitHubClientID,
 		conf.OAuth.GitHubClientSecret,
 		conf.OAuth.GitHubRedirectURL,
 	)
 
-	authenticator := auth_application.NewAuthenticator(
+	authenticator := user_application.NewAuthenticator(
 		logger,
 		userRepository,
 		refreshTokenRepository,
@@ -117,8 +119,8 @@ func Run() error {
 		conf.JWT.ExpirationMinutes,
 	)
 
-	tokenValidator := auth_application.NewTokenValidator(logger, jwtManager, userRepository)
-	tokenRefresher := auth_application.NewTokenRefresher(logger, refreshTokenRepository, userRepository, jwtManager, conf.JWT.ExpirationMinutes)
+	tokenValidator := user_application.NewTokenValidator(logger, jwtManager, userRepository)
+	tokenRefresher := refresh_token_application.NewTokenRefresher(logger, refreshTokenRepository, userRepository, jwtManager, conf.JWT.ExpirationMinutes)
 
 	shortLinkFinderByCode := short_link_application.NewShortLinkFinderByCode(logger, shortLinkRepository)
 	shortLinkFinderByClient := short_link_application.NewShortLinkFinderByClient(logger, shortLinkRepository, clientRepo)
@@ -139,9 +141,9 @@ func Run() error {
 	postPublicShortLink := short_link_http.NewPostPublicShortLinkHTTPHandler(logger, *publShortLinkCreator)
 
 	googleLoginHandler := auth_http.NewGetOAuthLoginHandler(logger, googleOAuthClient, "google", conf.OAuth.StateSecret)
-	googleCallbackHandler := auth_http.NewGetOAuthCallbackHandler(logger, googleOAuthClient, authenticator, auth_domain.OAuthProviderGoogle, conf.OAuth.StateSecret)
+	googleCallbackHandler := auth_http.NewGetOAuthCallbackHandler(logger, googleOAuthClient, authenticator, user_domain.OAuthProviderGoogle, conf.OAuth.StateSecret)
 	githubLoginHandler := auth_http.NewGetOAuthLoginHandler(logger, githubOAuthClient, "github", conf.OAuth.StateSecret)
-	githubCallbackHandler := auth_http.NewGetOAuthCallbackHandler(logger, githubOAuthClient, authenticator, auth_domain.OAuthProviderGitHub, conf.OAuth.StateSecret)
+	githubCallbackHandler := auth_http.NewGetOAuthCallbackHandler(logger, githubOAuthClient, authenticator, user_domain.OAuthProviderGitHub, conf.OAuth.StateSecret)
 	refreshTokenHandler := auth_http.NewPostRefreshTokenHandler(logger, tokenRefresher)
 
 	incrementerOnLinkVisitProcessed := link_country_view_counter.NewIncremeterOnLinkVisitProcessed(logger, geoRepository, linkCountryViewCounterRepository)
@@ -150,7 +152,7 @@ func Run() error {
 	creatorOnShorLinkCreated := link_analytics_application.NewCreatorOnShortLinkCreated(logger, linkAnalytics)
 	eventBus.AddSubscribers("ShortLinkCreated", creatorOnShorLinkCreated)
 	creatorOnUserCreated := client_application.NewCreatorOnUserCreated(logger, clientRepo)
-	eventBus.AddSubscribers(auth_domain.UserCreatedEventName, creatorOnUserCreated)
+	eventBus.AddSubscribers(user_domain.UserCreatedEventName, creatorOnUserCreated)
 	eventBus.AddSubscribers(link_visit_domain.LinkVisitsProcessedEventName, incrementerOnLinkVisitProcessed)
 
 	c := cron.New()

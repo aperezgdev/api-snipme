@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/aperezgdev/api-snipme/db/generated"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
@@ -24,7 +24,7 @@ func setupPostgresContainerForUser(t *testing.T) (*pgxpool.Pool, func()) {
 		postgres.WithDatabase("testdb"),
 		postgres.WithUsername("testuser"),
 		postgres.WithPassword("testpass"),
-		postgres.WithInitScripts("../../../../../db/schema/user.sql"),
+		postgres.WithInitScripts("../../../../../../db/schema/user.sql"),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2),
@@ -67,7 +67,7 @@ func TestSqlcUserRepository_Save(t *testing.T) {
 		logger := shared_domain.DummyLogger{}
 		repo := NewSqlcUserRepository(logger, queries)
 
-		user, err := domain.NewUser("test@example.com", domain.OAuthProviderGoogle, "oauth-subject-123")
+		user, err := user_domain.NewUser("test@example.com", user_domain.OAuthProviderGoogle, "oauth-subject-123")
 		assert.NoError(t, err)
 
 		err = repo.Save(context.Background(), user)
@@ -90,12 +90,12 @@ func TestSqlcUserRepository_Save(t *testing.T) {
 		logger := shared_domain.DummyLogger{}
 		repo := NewSqlcUserRepository(logger, queries)
 
-		user1, err := domain.NewUser("duplicate@example.com", domain.OAuthProviderGoogle, "subject-1")
+		user1, err := user_domain.NewUser("duplicate@example.com", user_domain.OAuthProviderGoogle, "subject-1")
 		assert.NoError(t, err)
 		err = repo.Save(context.Background(), user1)
 		assert.NoError(t, err)
 
-		user2, err := domain.NewUser("duplicate@example.com", domain.OAuthProviderGoogle, "subject-2")
+		user2, err := user_domain.NewUser("duplicate@example.com", user_domain.OAuthProviderGoogle, "subject-2")
 		assert.NoError(t, err)
 		err = repo.Save(context.Background(), user2)
 		assert.Error(t, err)
@@ -111,12 +111,12 @@ func TestSqlcUserRepository_Save(t *testing.T) {
 		logger := shared_domain.DummyLogger{}
 		repo := NewSqlcUserRepository(logger, queries)
 
-		user1, err := domain.NewUser("user1@example.com", domain.OAuthProviderGoogle, "same-subject")
+		user1, err := user_domain.NewUser("user1@example.com", user_domain.OAuthProviderGoogle, "same-subject")
 		assert.NoError(t, err)
 		err = repo.Save(context.Background(), user1)
 		assert.NoError(t, err)
 
-		user2, err := domain.NewUser("user2@example.com", domain.OAuthProviderGoogle, "same-subject")
+		user2, err := user_domain.NewUser("user2@example.com", user_domain.OAuthProviderGoogle, "same-subject")
 		assert.NoError(t, err)
 		err = repo.Save(context.Background(), user2)
 		assert.Error(t, err)
@@ -136,7 +136,7 @@ func TestSqlcUserRepository_FindById(t *testing.T) {
 		logger := shared_domain.DummyLogger{}
 		repo := NewSqlcUserRepository(logger, queries)
 
-		user, err := domain.NewUser("findbyid@example.com", domain.OAuthProviderGoogle, "subject-findbyid")
+		user, err := user_domain.NewUser("findbyid@example.com", user_domain.OAuthProviderGoogle, "subject-findbyid")
 		assert.NoError(t, err)
 		err = repo.Save(context.Background(), user)
 		assert.NoError(t, err)
@@ -180,7 +180,7 @@ func TestSqlcUserRepository_FindByEmail(t *testing.T) {
 		logger := shared_domain.DummyLogger{}
 		repo := NewSqlcUserRepository(logger, queries)
 
-		user, err := domain.NewUser("findbyemail@example.com", domain.OAuthProviderGitHub, "subject-findbyemail")
+		user, err := user_domain.NewUser("findbyemail@example.com", user_domain.OAuthProviderGitHub, "subject-findbyemail")
 		assert.NoError(t, err)
 		err = repo.Save(context.Background(), user)
 		assert.NoError(t, err)
@@ -221,12 +221,12 @@ func TestSqlcUserRepository_FindByOAuthProviderAndSubject(t *testing.T) {
 		logger := shared_domain.DummyLogger{}
 		repo := NewSqlcUserRepository(logger, queries)
 
-		user, err := domain.NewUser("oauth@example.com", domain.OAuthProviderGoogle, "oauth-subject-unique")
+		user, err := user_domain.NewUser("oauth@example.com", user_domain.OAuthProviderGoogle, "oauth-subject-unique")
 		assert.NoError(t, err)
 		err = repo.Save(context.Background(), user)
 		assert.NoError(t, err)
 
-		foundUser, err := repo.FindByOAuthProviderAndSubject(context.Background(), domain.OAuthProviderGoogle, "oauth-subject-unique")
+		foundUser, err := repo.FindByOAuthProviderAndSubject(context.Background(), user_domain.OAuthProviderGoogle, "oauth-subject-unique")
 		assert.NoError(t, err)
 		assert.True(t, foundUser.IsPresent())
 		assert.Equal(t, user.Id, foundUser.Get().Id)
@@ -244,7 +244,7 @@ func TestSqlcUserRepository_FindByOAuthProviderAndSubject(t *testing.T) {
 		logger := shared_domain.DummyLogger{}
 		repo := NewSqlcUserRepository(logger, queries)
 
-		foundUser, err := repo.FindByOAuthProviderAndSubject(context.Background(), domain.OAuthProviderGitHub, "nonexistent-subject")
+		foundUser, err := repo.FindByOAuthProviderAndSubject(context.Background(), user_domain.OAuthProviderGitHub, "nonexistent-subject")
 		assert.NoError(t, err)
 		assert.False(t, foundUser.IsPresent())
 	})
@@ -263,7 +263,7 @@ func TestSqlcUserRepository_Update(t *testing.T) {
 		logger := shared_domain.DummyLogger{}
 		repo := NewSqlcUserRepository(logger, queries)
 
-		user, err := domain.NewUser("update@example.com", domain.OAuthProviderGoogle, "update-subject")
+		user, err := user_domain.NewUser("update@example.com", user_domain.OAuthProviderGoogle, "update-subject")
 		assert.NoError(t, err)
 		err = repo.Save(context.Background(), user)
 		assert.NoError(t, err)

@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/application"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/application"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/infrastructure"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 )
 
@@ -18,7 +18,7 @@ type GetOAuthCallbackHandler struct {
 	logger        shared_domain.Logger
 	oauthClient   infrastructure.OAuthClient
 	authenticator *application.Authenticator
-	provider      domain.OAuthProvider
+	provider      user_domain.OAuthProvider
 	stateSecret   string
 }
 
@@ -26,7 +26,7 @@ func NewGetOAuthCallbackHandler(
 	logger shared_domain.Logger,
 	oauthClient infrastructure.OAuthClient,
 	authenticator *application.Authenticator,
-	provider domain.OAuthProvider,
+	provider user_domain.OAuthProvider,
 	stateSecret string,
 ) *GetOAuthCallbackHandler {
 	return &GetOAuthCallbackHandler{

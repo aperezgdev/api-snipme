@@ -3,7 +3,8 @@ package application
 import (
 	"context"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 )
 
@@ -15,7 +16,7 @@ type RefreshTokenResult struct {
 type TokenRefresher struct {
 	logger                    shared_domain.Logger
 	refreshTokenRepo          domain.RefreshTokenRepository
-	userRepo                  domain.UserRepository
+	userRepo user_domain.UserRepository
 	tokenManager              domain.TokenManager
 	jwtTokenExpirationMinutes int
 }
@@ -23,7 +24,7 @@ type TokenRefresher struct {
 func NewTokenRefresher(
 	logger shared_domain.Logger,
 	refreshTokenRepo domain.RefreshTokenRepository,
-	userRepo domain.UserRepository,
+	userRepo user_domain.UserRepository,
 	tokenManager domain.TokenManager,
 	jwtTokenExpirationMinutes int,
 ) *TokenRefresher {

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/aperezgdev/api-snipme/db/generated"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/jackc/pgx/v5"

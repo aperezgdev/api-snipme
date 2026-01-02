@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/infrastructure"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/stretchr/testify/mock"
@@ -19,12 +20,12 @@ func TestTokenRefresherRefresh(t *testing.T) {
 	t.Run("refreshes token successfully", func(t *testing.T) {
 		t.Parallel()
 		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		userRepo := &domain.UserRepositoryMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
 		jwtManager := &infrastructure.JWTManagerMock{}
 
 		refresher := NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
 
-		user, _ := domain.NewUser("test@example.com", domain.OAuthProviderGoogle, "subject-123")
+		user, _ := user_domain.NewUser("test@example.com", user_domain.OAuthProviderGoogle, "subject-123")
 		refreshToken, _ := domain.NewRefreshToken(user.Id.String(), "refresh-token-string", time.Now().Add(24*time.Hour))
 
 		refreshTokenRepo.On("FindByToken", mock.Anything, "refresh-token-string").
@@ -55,7 +56,7 @@ func TestTokenRefresherRefresh(t *testing.T) {
 	t.Run("fails when refresh token not found", func(t *testing.T) {
 		t.Parallel()
 		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		userRepo := &domain.UserRepositoryMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
 		jwtManager := &infrastructure.JWTManagerMock{}
 
 		refresher := NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
@@ -75,7 +76,7 @@ func TestTokenRefresherRefresh(t *testing.T) {
 	t.Run("fails when refresh token is expired", func(t *testing.T) {
 		t.Parallel()
 		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		userRepo := &domain.UserRepositoryMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
 		jwtManager := &infrastructure.JWTManagerMock{}
 
 		refresher := NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
@@ -105,7 +106,7 @@ func TestTokenRefresherRefresh(t *testing.T) {
 	t.Run("fails when user not found", func(t *testing.T) {
 		t.Parallel()
 		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		userRepo := &domain.UserRepositoryMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
 		jwtManager := &infrastructure.JWTManagerMock{}
 
 		refresher := NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
@@ -115,7 +116,7 @@ func TestTokenRefresherRefresh(t *testing.T) {
 
 		refreshTokenRepo.On("FindByToken", mock.Anything, "refresh-token-string").
 			Return(pkg.Some(refreshToken), nil)
-		userRepo.On("FindById", mock.Anything, userId).Return(pkg.EmptyOptional[*domain.User](), nil)
+		userRepo.On("FindById", mock.Anything, userId).Return(pkg.EmptyOptional[*user_domain.User](), nil)
 
 		_, err := refresher.Refresh(context.Background(), "refresh-token-string")
 
@@ -130,12 +131,12 @@ func TestTokenRefresherRefresh(t *testing.T) {
 	t.Run("fails when JWT generation returns error", func(t *testing.T) {
 		t.Parallel()
 		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		userRepo := &domain.UserRepositoryMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
 		jwtManager := &infrastructure.JWTManagerMock{}
 
 		refresher := NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
 
-		user, _ := domain.NewUser("test@example.com", domain.OAuthProviderGoogle, "subject-123")
+		user, _ := user_domain.NewUser("test@example.com", user_domain.OAuthProviderGoogle, "subject-123")
 		refreshToken, _ := domain.NewRefreshToken(user.Id.String(), "refresh-token-string", time.Now().Add(24*time.Hour))
 
 		refreshTokenRepo.On("FindByToken", mock.Anything, "refresh-token-string").

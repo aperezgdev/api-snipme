@@ -5,18 +5,18 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/application"
+	refresh_token_application "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/application"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 )
 
 type PostRefreshTokenHandler struct {
 	logger         shared_domain.Logger
-	tokenRefresher *application.TokenRefresher
+	tokenRefresher *refresh_token_application.TokenRefresher
 }
 
 func NewPostRefreshTokenHandler(
 	logger shared_domain.Logger,
-	tokenRefresher *application.TokenRefresher,
+	tokenRefresher *refresh_token_application.TokenRefresher,
 ) *PostRefreshTokenHandler {
 	return &PostRefreshTokenHandler{
 		logger:         logger,

@@ -7,9 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/application"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/infrastructure"
+        refresh_token_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/application"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/stretchr/testify/mock"
@@ -50,7 +51,7 @@ func TestAuthenticationMiddleware(t *testing.T) {
 			"oauth-subject-123",
 		)
 
-		claims := &domain.TokenClaims{
+		claims := &refresh_token_domain.TokenClaims{
 			UserID: user.Id.String(),
 			Email:  "test@example.com",
 		}

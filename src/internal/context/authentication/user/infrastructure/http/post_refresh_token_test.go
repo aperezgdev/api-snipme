@@ -7,9 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/application"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
+	refresh_token_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
+        refresh_token_application "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/application"
+	refresh_token_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/infrastructure"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 )
 
@@ -18,11 +19,11 @@ func TestPostRefreshTokenHandler(t *testing.T) {
 
 	t.Run("fails with empty refresh token", func(t *testing.T) {
 		t.Parallel()
-		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		userRepo := &domain.UserRepositoryMock{}
-		jwtManager := &infrastructure.JWTManagerMock{}
+		refreshTokenRepo := &refresh_token_domain.RefreshTokenRepositoryMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
+		jwtManager := &refresh_token_infrastructure.JWTManagerMock{}
 
-		refresher := application.NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
+		refresher := refresh_token_application.NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
 		handler := NewPostRefreshTokenHandler(logger, refresher)
 
 		body := map[string]string{"refresh_token": ""}
@@ -42,11 +43,11 @@ func TestPostRefreshTokenHandler(t *testing.T) {
 
 	t.Run("fails with invalid JSON body", func(t *testing.T) {
 		t.Parallel()
-		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		userRepo := &domain.UserRepositoryMock{}
-		jwtManager := &infrastructure.JWTManagerMock{}
+		refreshTokenRepo := &refresh_token_domain.RefreshTokenRepositoryMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
+		jwtManager := &refresh_token_infrastructure.JWTManagerMock{}
 
-		refresher := application.NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
+		refresher := refresh_token_application.NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
 		handler := NewPostRefreshTokenHandler(logger, refresher)
 
 		req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewReader([]byte("invalid json")))
@@ -62,11 +63,11 @@ func TestPostRefreshTokenHandler(t *testing.T) {
 	})
 
 	t.Run("has correct route", func(t *testing.T) {
-		refreshTokenRepo := &domain.RefreshTokenRepositoryMock{}
-		userRepo := &domain.UserRepositoryMock{}
-		jwtManager := &infrastructure.JWTManagerMock{}
+		refreshTokenRepo := &refresh_token_domain.RefreshTokenRepositoryMock{}
+		userRepo := &user_domain.UserRepositoryMock{}
+		jwtManager := &refresh_token_infrastructure.JWTManagerMock{}
 
-		refresher := application.NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
+		refresher := refresh_token_application.NewTokenRefresher(logger, refreshTokenRepo, userRepo, jwtManager, 20)
 		handler := NewPostRefreshTokenHandler(logger, refresher)
 
 		route := handler.Route()

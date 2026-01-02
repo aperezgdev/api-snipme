@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/application"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/application"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	shared_http "github.com/aperezgdev/api-snipme/src/internal/context/shared/infrastructure/http"
 )
@@ -65,7 +65,7 @@ func (m *AuthenticationMiddleware) Handle(next shared_http.Route) http.HandlerFu
 	}
 }
 
-func GetAuthenticatedUser(ctx context.Context) (*domain.User, bool) {
-	user, ok := ctx.Value(AuthenticatedUserKey).(*domain.User)
+func GetAuthenticatedUser(ctx context.Context) (*user_domain.User, bool) {
+	user, ok := ctx.Value(AuthenticatedUserKey).(*user_domain.User)
 	return user, ok
 }

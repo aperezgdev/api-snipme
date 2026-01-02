@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/mock"
 )

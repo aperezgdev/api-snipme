@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	auth_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	auth_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
 	shared_domain_context "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shortener/client/domain"
 	"github.com/stretchr/testify/mock"

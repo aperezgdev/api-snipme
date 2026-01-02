@@ -3,7 +3,7 @@ package application
 import (
 	"context"
 
-	auth_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	auth_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
 	domain_shared "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/internal/context/shortener/client/domain"
 )

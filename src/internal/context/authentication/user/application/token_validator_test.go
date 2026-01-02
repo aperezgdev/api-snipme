@@ -5,8 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/infrastructure"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/infrastructure"
+        refresh_token_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/aperezgdev/api-snipme/src/pkg"
 	"github.com/stretchr/testify/mock"
@@ -24,7 +25,7 @@ func TestTokenValidator_Validate(t *testing.T) {
 
 		user, _ := domain.NewUser("test@example.com", domain.OAuthProviderGoogle, "subject-123")
 
-		claims := &domain.TokenClaims{
+		claims := &refresh_token_domain.TokenClaims{
 			UserID: user.Id.String(),
 			Email:  "test@example.com",
 		}
@@ -74,7 +75,7 @@ func TestTokenValidator_Validate(t *testing.T) {
 		validator := NewTokenValidator(logger, jwtManager, userRepo)
 
 		userId, _ := shared_domain.NewID()
-		claims := &domain.TokenClaims{
+		claims := &refresh_token_domain.TokenClaims{
 			UserID: userId.String(),
 			Email:  "test@example.com",
 		}

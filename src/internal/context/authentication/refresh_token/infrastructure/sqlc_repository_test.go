@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/aperezgdev/api-snipme/db/generated"
-	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/domain"
+	"github.com/aperezgdev/api-snipme/src/internal/context/authentication/refresh_token/domain"
+	user_domain "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/domain"
+	user_infrastructure "github.com/aperezgdev/api-snipme/src/internal/context/authentication/user/infrastructure"
 	shared_domain "github.com/aperezgdev/api-snipme/src/internal/context/shared/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +28,7 @@ func setupPostgresContainerForRefreshToken(t *testing.T) (*pgxpool.Pool, func())
 		postgres.WithUsername("testuser"),
 		postgres.WithPassword("testpass"),
 		postgres.WithInitScripts(
-			"../../../../../db/schema/user.sql",
+			"../../../../../../db/schema/user.sql",
 		),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
@@ -86,10 +88,10 @@ func TestSqlcRefreshTokenRepository_Save(t *testing.T) {
 
 		queries := generated.New(pool)
 		logger := shared_domain.DummyLogger{}
-		userRepo := NewSqlcUserRepository(logger, queries)
+		userRepo := user_infrastructure.NewSqlcUserRepository(logger, queries)
 		tokenRepo := NewSqlcRefreshTokenRepository(logger, queries)
 
-		user, err := domain.NewUser("token@example.com", domain.OAuthProviderGoogle, "token-subject")
+		user, err := user_domain.NewUser("token@example.com", user_domain.OAuthProviderGoogle, "token-subject")
 		assert.NoError(t, err)
 		err = userRepo.Save(context.Background(), user)
 		assert.NoError(t, err)
@@ -115,10 +117,10 @@ func TestSqlcRefreshTokenRepository_Save(t *testing.T) {
 
 		queries := generated.New(pool)
 		logger := shared_domain.DummyLogger{}
-		userRepo := NewSqlcUserRepository(logger, queries)
+		userRepo := user_infrastructure.NewSqlcUserRepository(logger, queries)
 		tokenRepo := NewSqlcRefreshTokenRepository(logger, queries)
 
-		user, err := domain.NewUser("duplicate-token@example.com", domain.OAuthProviderGoogle, "dup-subject")
+		user, err := user_domain.NewUser("duplicate-token@example.com", user_domain.OAuthProviderGoogle, "dup-subject")
 		assert.NoError(t, err)
 		err = userRepo.Save(context.Background(), user)
 		assert.NoError(t, err)
@@ -145,10 +147,10 @@ func TestSqlcRefreshTokenRepository_FindByToken(t *testing.T) {
 
 		queries := generated.New(pool)
 		logger := shared_domain.DummyLogger{}
-		userRepo := NewSqlcUserRepository(logger, queries)
+		userRepo := user_infrastructure.NewSqlcUserRepository(logger, queries)
 		tokenRepo := NewSqlcRefreshTokenRepository(logger, queries)
 
-		user, err := domain.NewUser("findtoken@example.com", domain.OAuthProviderGoogle, "find-subject")
+		user, err := user_domain.NewUser("findtoken@example.com", user_domain.OAuthProviderGoogle, "find-subject")
 		assert.NoError(t, err)
 		err = userRepo.Save(context.Background(), user)
 		assert.NoError(t, err)
@@ -193,10 +195,10 @@ func TestSqlcRefreshTokenRepository_FindByUserId(t *testing.T) {
 
 		queries := generated.New(pool)
 		logger := shared_domain.DummyLogger{}
-		userRepo := NewSqlcUserRepository(logger, queries)
+		userRepo := user_infrastructure.NewSqlcUserRepository(logger, queries)
 		tokenRepo := NewSqlcRefreshTokenRepository(logger, queries)
 
-		user, err := domain.NewUser("multitoken@example.com", domain.OAuthProviderGitHub, "multi-subject")
+		user, err := user_domain.NewUser("multitoken@example.com", user_domain.OAuthProviderGitHub, "multi-subject")
 		assert.NoError(t, err)
 		err = userRepo.Save(context.Background(), user)
 		assert.NoError(t, err)
@@ -224,10 +226,10 @@ func TestSqlcRefreshTokenRepository_FindByUserId(t *testing.T) {
 
 		queries := generated.New(pool)
 		logger := shared_domain.DummyLogger{}
-		userRepo := NewSqlcUserRepository(logger, queries)
+		userRepo := user_infrastructure.NewSqlcUserRepository(logger, queries)
 		tokenRepo := NewSqlcRefreshTokenRepository(logger, queries)
 
-		user, err := domain.NewUser("notoken@example.com", domain.OAuthProviderGitHub, "no-token-subject")
+		user, err := user_domain.NewUser("notoken@example.com", user_domain.OAuthProviderGitHub, "no-token-subject")
 		assert.NoError(t, err)
 		err = userRepo.Save(context.Background(), user)
 		assert.NoError(t, err)
@@ -249,10 +251,10 @@ func TestSqlcRefreshTokenRepository_Delete(t *testing.T) {
 
 		queries := generated.New(pool)
 		logger := shared_domain.DummyLogger{}
-		userRepo := NewSqlcUserRepository(logger, queries)
+		userRepo := user_infrastructure.NewSqlcUserRepository(logger, queries)
 		tokenRepo := NewSqlcRefreshTokenRepository(logger, queries)
 
-		user, err := domain.NewUser("delete@example.com", domain.OAuthProviderGoogle, "delete-subject")
+		user, err := user_domain.NewUser("delete@example.com", user_domain.OAuthProviderGoogle, "delete-subject")
 		assert.NoError(t, err)
 		err = userRepo.Save(context.Background(), user)
 		assert.NoError(t, err)
@@ -296,10 +298,10 @@ func TestSqlcRefreshTokenRepository_DeleteByUserId(t *testing.T) {
 
 		queries := generated.New(pool)
 		logger := shared_domain.DummyLogger{}
-		userRepo := NewSqlcUserRepository(logger, queries)
+		userRepo := user_infrastructure.NewSqlcUserRepository(logger, queries)
 		tokenRepo := NewSqlcRefreshTokenRepository(logger, queries)
 
-		user, err := domain.NewUser("deleteall@example.com", domain.OAuthProviderGitHub, "deleteall-subject")
+		user, err := user_domain.NewUser("deleteall@example.com", user_domain.OAuthProviderGitHub, "deleteall-subject")
 		assert.NoError(t, err)
 		err = userRepo.Save(context.Background(), user)
 		assert.NoError(t, err)
@@ -330,10 +332,10 @@ func TestSqlcRefreshTokenRepository_DeleteByUserId(t *testing.T) {
 
 		queries := generated.New(pool)
 		logger := shared_domain.DummyLogger{}
-		userRepo := NewSqlcUserRepository(logger, queries)
+		userRepo := user_infrastructure.NewSqlcUserRepository(logger, queries)
 		tokenRepo := NewSqlcRefreshTokenRepository(logger, queries)
 
-		user, err := domain.NewUser("notokensdelete@example.com", domain.OAuthProviderGitHub, "no-tokens-delete-subject")
+		user, err := user_domain.NewUser("notokensdelete@example.com", user_domain.OAuthProviderGitHub, "no-tokens-delete-subject")
 		assert.NoError(t, err)
 		err = userRepo.Save(context.Background(), user)
 		assert.NoError(t, err)
